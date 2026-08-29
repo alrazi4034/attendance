@@ -961,11 +961,11 @@ function applyRosterClassOverride(rosterRows, className, pastedText){
   }).filter(e => e.name && e.id);
   if(!entries.length) return { rows: rosterRows, count: 0 };
 
-  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف', 'اسم ورقم']);
+  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف']);
   if(headerIdx === -1) return { rows: rosterRows, count: 0 };
   const headers = rosterRows[headerIdx];
   const colClass = findCol(headers, ['الصف'], -1);
-  const colNameNum = findCol(headers, ['اسم ورقم'], -1);
+  const colNameNum = findCol(headers, ['اسم ورقم', 'اسم الطالب'], -1);
 
   const targetClass = normalizeClassName(className);
   const kept = rosterRows.filter((row, idx) => {
@@ -994,10 +994,10 @@ function applyPhoneBulkOverride(rosterRows, className, studentIdsInOrder, pasted
     return { rows: rosterRows, count: 0, mismatch: true, expected: studentIdsInOrder.length, got: normalized.length };
   }
 
-  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف', 'اسم ورقم']);
+  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف']);
   if(headerIdx === -1) return { rows: rosterRows, count: 0, mismatch: false };
   const headers = rosterRows[headerIdx];
-  const colNameNum = findCol(headers, ['اسم ورقم'], -1);
+  const colNameNum = findCol(headers, ['اسم ورقم', 'اسم الطالب'], -1);
   let colPhone = findCol(headers, ['رقم التواصل','رقم الاتصال','رقم ولي الأمر','رقم جوال ولي الأمر','رقم الجوال','هاتف ولي الأمر','رقم الهاتف'], -1);
 
   const phoneById = {};
@@ -1045,10 +1045,10 @@ function applyStoredRosterOverrides(rosterRows, overridesMap){
 /* تصحيح هاتف مباشر لأي رقم طالب موجود في خريطة مسطّحة (studentId -> phone) - يُستخدم لإعادة تطبيق التحديثات اليدوية عند كل قراءة */
 function applyStoredPhoneOverrides(rosterRows, phoneMap){
   if(!phoneMap || !Object.keys(phoneMap).length) return rosterRows;
-  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف', 'اسم ورقم']);
+  const headerIdx = findHeaderRowIndex(rosterRows, ['الصف']);
   if(headerIdx === -1) return rosterRows;
   const headers = rosterRows[headerIdx];
-  const colNameNum = findCol(headers, ['اسم ورقم'], -1);
+  const colNameNum = findCol(headers, ['اسم ورقم', 'اسم الطالب'], -1);
   let colPhone = findCol(headers, ['رقم التواصل','رقم الاتصال','رقم ولي الأمر','رقم جوال ولي الأمر','رقم الجوال','هاتف ولي الأمر','رقم الهاتف'], -1);
   const newHeaders = headers.slice();
   if(colPhone < 0){ colPhone = newHeaders.length; newHeaders.push('رقم التواصل'); }
@@ -1085,14 +1085,23 @@ function buildWALink(phone, message){
   return `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
 }
 
-function totalAbsenceInquiryMessage(schoolName, studentName, className, totalDays, weekLabel){
-  weekLabel = weekLabel || '';
-  return `السلام عليكم، لدى ابنكم الطالب ${studentName} (شعبة ${className}) عدد ${totalDays} من أيام الغياب حتى الآن${weekLabel}. نأمل التكرم بإفادتنا بالسبب. مع خالص الشكر - ${schoolName}`;
+function childRefPhrase(genderType){
+  const t = (genderType || '').trim();
+  if(t.includes('اناث') || t.includes('إناث') || t.includes('بنات')) return 'ابنتكم الطالبة';
+  if(t.includes('مختلط')) return 'ابنكم/ابنتكم الطالب(ة)';
+  return 'ابنكم الطالب'; // الافتراضي: بنين
 }
 
-function dailyAbsenceInquiryMessage(schoolName, studentName, className, date, weekLabel){
+function totalAbsenceInquiryMessage(schoolName, studentName, className, totalDays, weekLabel, genderType){
   weekLabel = weekLabel || '';
-  return `السلام عليكم، نلاحظ غياب ابنكم الطالب ${studentName} (شعبة ${className}) اليوم ${weekdayName(date)} الموافق ${fmtDate(date)}${weekLabel}. نأمل التكرم بإفادتنا بسبب الغياب، وإرسال العذر الطبي أو الرسمي إن وجد. مع خالص الشكر - ${schoolName}`;
+  const ref = childRefPhrase(genderType);
+  return `السلام عليكم، لدى ${ref} ${studentName} (شعبة ${className}) عدد ${totalDays} من أيام الغياب حتى الآن${weekLabel}. نأمل التكرم بإفادتنا بالسبب. مع خالص الشكر - ${schoolName}`;
+}
+
+function dailyAbsenceInquiryMessage(schoolName, studentName, className, date, weekLabel, genderType){
+  weekLabel = weekLabel || '';
+  const ref = childRefPhrase(genderType);
+  return `السلام عليكم، نلاحظ غياب ${ref} ${studentName} (شعبة ${className}) اليوم ${weekdayName(date)} الموافق ${fmtDate(date)}${weekLabel}. نأمل التكرم بإفادتنا بسبب الغياب، وإرسال العذر الطبي أو الرسمي إن وجد. مع خالص الشكر - ${schoolName}`;
 }
 
 /* ===================== قراءة الأوراق ===================== */
@@ -1108,7 +1117,7 @@ function parseAbsenceHeader(headers){
   const col = {};
   headers.forEach((h,i) => {
     const t = (h||'').toString().trim();
-    if(t === 'تاريخ اليوم') col.explicitDate = i;
+    if(t === 'تاريخ اليوم' || t === 'التاريخ') col.explicitDate = i;
     else if(t === 'Start time') col.start = i;
     else if(t === 'Completion time' && col.start == null) col.startFallback = i;
     else if(t === 'Email') col.email = i;
@@ -1131,11 +1140,37 @@ function parseAbsenceHeader(headers){
 
 /* التاريخ (يوم/شهر/سنة) يُفضَّل من عمود "تاريخ اليوم" الصريح إن وُجد، لكن الوقت (ساعة/دقيقة) يبقى دائماً
    من عمود وقت الإكمال الأصلي - ضروري لصحة خاصية "اعتماد الإدخال الأحدث" عند التكرار */
-function combineDateAndTime(dateVal, timeVal){
-  const d = toDateSafe(dateVal);
-  const t = toDateSafe(timeVal);
-  if(d && t) return new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
-  return d || t || null;
+/* التوقيت في عمود "وقت الإكمال" مُخزَّن بتوقيت غرينتش (GMT/UTC)، وليس توقيت الإمارات (+4 ساعات).
+   نحوّله بشكل مستقل تماماً عن توقيت الجهاز/المتصفح الذي يُشغِّل اللوحة، حتى يعمل بشكل صحيح دائماً بغضّ النظر عن مكان فتحها. */
+const UAE_UTC_OFFSET_HOURS = 4;
+function toUAELocalDate(rawDate){
+  if(!rawDate) return null;
+  const shifted = new Date(rawDate.getTime() + UAE_UTC_OFFSET_HOURS * 3600 * 1000);
+  return new Date(
+    shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate(),
+    shifted.getUTCHours(), shifted.getUTCMinutes(), shifted.getUTCSeconds()
+  );
+}
+
+/* يدمج تاريخ العمود الصريح (يوم/شهر/سنة) مع وقت الإكمال الفعلي (ساعة/دقيقة/ثانية)، كلاهما بعد تصحيح توقيت الإمارات.
+   إن كان التاريخ المُدخل يقع بعد تاريخ الإكمال الفعلي (تسجيل يوم مستقبلي)، يُرفض الرد بالكامل. */
+function resolveSubmissionDateTime(explicitDateVal, timeVal){
+  const completionUAE = toUAELocalDate(toDateSafe(timeVal));
+  if(!completionUAE) return { date: null, rejected: false };
+
+  const rawExplicit = toDateSafe(explicitDateVal);
+  if(!rawExplicit) return { date: completionUAE, rejected: false };
+  const explicitUAE = toUAELocalDate(rawExplicit);
+
+  if(fmtDate(explicitUAE) > fmtDate(completionUAE)){
+    return { date: null, rejected: true };
+  }
+
+  const combined = new Date(
+    explicitUAE.getFullYear(), explicitUAE.getMonth(), explicitUAE.getDate(),
+    completionUAE.getHours(), completionUAE.getMinutes(), completionUAE.getSeconds()
+  );
+  return { date: combined, rejected: false };
 }
 
 function findHeaderRowIndex(rows, requiredHeaders){
@@ -1148,12 +1183,12 @@ function findHeaderRowIndex(rows, requiredHeaders){
 }
 
 function parseRoster(rows){
-  const headerIdx = findHeaderRowIndex(rows, ['الصف', 'اسم ورقم']);
+  const headerIdx = findHeaderRowIndex(rows, ['الصف']);
   if(headerIdx === -1) return { roster: new Map(), hasPhone: false };
   const headers = rows[headerIdx] || [];
   const colClass = findCol(headers, ['الصف'], -1);
   const colOrder = findCol(headers, ['م'], -1);
-  const colNameNum = findCol(headers, ['اسم ورقم'], -1);
+  const colNameNum = findCol(headers, ['اسم ورقم', 'اسم الطالب'], -1);
   const colPhone = findCol(headers, ['رقم التواصل','رقم الاتصال','رقم ولي الأمر','رقم جوال ولي الأمر','رقم الجوال','هاتف ولي الأمر','رقم الهاتف'], -1);
   const hasPhone = colPhone >= 0;
 
@@ -1278,14 +1313,30 @@ function normalizeDateCell(val){
 
 function parseTermConfigSheet(rows){
   if(!rows) return null;
+  const normHeader = s => (s||'').toString().trim().replace(/\s+/g, ' ');
 
-  // 1) العام الدراسي: الخلية المجاورة لتسمية "العام الدراسي"
-  let year = null;
-  for(const row of rows){
-    if(!row) continue;
-    if((row[0]||'').toString().trim() === 'العام الدراسي'){
-      year = row[1] != null ? String(row[1]).trim() : null;
-      break;
+  // 1) بيانات هوية المدرسة: صف عناوين (اسم المدرسة / اسم المدير(ة) / رئيس شؤون الطلبة / العام الدراسي...) يليه صف القيم مباشرة
+  let schoolName = null, principalName = null, studentAffairsHead = null, year = null, studentGenderType = null;
+  const idHeaderIdx = findHeaderRowIndex(rows, ['اسم المدرسة']);
+  if(idHeaderIdx !== -1){
+    const headerRow = rows[idHeaderIdx] || [];
+    const valueRow = rows[idHeaderIdx + 1] || [];
+    headerRow.forEach((h, i) => {
+      const t = normHeader(h);
+      const v = valueRow[i] != null ? String(valueRow[i]).trim() : '';
+      if(!v) return;
+      if(t === 'اسم المدرسة') schoolName = v;
+      else if(t.includes('اسم مدير') || t.includes('اسم المدير')) principalName = v;
+      else if(t.includes('رئيس') && t.includes('شؤون')) studentAffairsHead = v;
+      else if(t === 'العام الدراسي') year = v;
+      else if(t.includes('نوع الطلاب') || t.includes('نوع المدرسة')) studentGenderType = v;
+    });
+  }
+  // احتياط: البحث عن "العام الدراسي" بصيغة تسمية+خلية مجاورة في أي مكان بالورقة (توافق مع الصيغة الأقدم)
+  if(!year){
+    for(const row of rows){
+      if(!row) continue;
+      if(normHeader(row[0]) === 'العام الدراسي' && row[1] != null){ year = String(row[1]).trim(); break; }
     }
   }
 
@@ -1303,20 +1354,28 @@ function parseTermConfigSheet(rows){
     }
   }
 
-  // 3) جدول أسابيع الاستراحة (اختياري)
+  // 3) جدول أسابيع الاستراحة + أيام العطل الرسمية (عمودان تحت نفس رأس الجدول)
   const breakHeaderIdx = findHeaderRowIndex(rows, ['تاريخ بداية أسبوع الاستراحة']);
   const breakWeekStarts = [];
+  const holidayDates = [];
   if(breakHeaderIdx !== -1){
+    const headerRow = rows[breakHeaderIdx] || [];
+    const holidayColIdx = headerRow.findIndex(h => normHeader(h).includes('أيام العطل'));
     for(let r = breakHeaderIdx + 1; r < rows.length; r++){
       const row = rows[r];
-      if(!row || !row[0]) break;
-      const d = normalizeDateCell(row[0]);
-      if(d) breakWeekStarts.push(d);
+      if(!row || (!row[0] && (holidayColIdx === -1 || !row[holidayColIdx]))) break;
+      const bd = normalizeDateCell(row[0]);
+      if(bd) breakWeekStarts.push(bd);
+      if(holidayColIdx !== -1){
+        const hd = normalizeDateCell(row[holidayColIdx]);
+        if(hd) holidayDates.push(hd);
+      }
     }
   }
 
-  if(!terms.length) return null;
+  if(!terms.length && !schoolName) return null;
   terms.sort((a,b) => a.startDate.localeCompare(b.startDate));
+  return { year, schoolName, principalName, studentAffairsHead, studentGenderType, terms, breakWeekStarts, holidayDates };
   return { year, terms, breakWeekStarts };
 }
 
@@ -1334,8 +1393,17 @@ function buildAppData(absRows, rosterRows){
   for(let r = 1; r < absRows.length; r++){
     const row = absRows[r];
     if(!row || row.every(c => c === null || c === '')) continue; // تجاهل الصفوف الفارغة تماماً (شائعة في نهاية ملفات إكسل المصدَّرة)
+
+    let date;
+    if(col.explicitDate != null){
+      const resolved = resolveSubmissionDateTime(row[col.explicitDate], row[col.start]);
+      if(resolved.rejected) continue; // تاريخ مُدخل يقع بعد تاريخ الإكمال الفعلي (يوم مستقبلي) - نرفض الرد بالكامل
+      date = resolved.date;
+    } else {
+      date = toUAELocalDate(toDateSafe(row[col.start]));
+    }
+
     processedRows++;
-    const date = col.explicitDate != null ? combineDateAndTime(row[col.explicitDate], row[col.start]) : toDateSafe(row[col.start]);
     const emailVal = col.email != null ? (row[col.email]||'').toString().trim() : '';
     const emailTeacherName = deriveTeacherNameFromEmail(emailVal);
     const fallbackTeacherName = col.teacher != null ? (row[col.teacher]||'').toString().trim() : '';
@@ -1494,9 +1562,20 @@ function buildSubmissionCells(allSubmissions){
    طبقة الواجهة (UI) - تعتمد على دوال core.js أعلاه
    ============================================================ */
 
-const SCHOOL_NAME = "مدرسة الرازي للبنين - الحلقة 2";
-const PRINCIPAL_NAME = "بدرية سيف الظنحاني";
+let SCHOOL_NAME = "مدرسة الرازي للبنين - الحلقة 2";
+let PRINCIPAL_NAME = "بدرية سيف الظنحاني";
+let STUDENT_AFFAIRS_HEAD = null;
+let STUDENT_GENDER_TYPE = "بنين";
 const LS_KEY = 'attendanceDashboard_v3';
+
+function updateSchoolIdentityDisplay(){
+  document.title = 'سجل متابعة حضور الطلبة | ' + SCHOOL_NAME;
+  const subtitleEl = document.querySelector('.brand-text .subtitle');
+  const staffLineEl = document.querySelector('.brand-text .staff-line');
+  if(subtitleEl) subtitleEl.textContent = SCHOOL_NAME;
+  if(staffLineEl) staffLineEl.textContent = 'مديرة/مدير المدرسة: ' + PRINCIPAL_NAME + (STUDENT_AFFAIRS_HEAD ? ' — رئيس شؤون الطلبة: ' + STUDENT_AFFAIRS_HEAD : '');
+}
+
 
 /* ===================== حالة التطبيق ===================== */
 let APP = {
@@ -1693,13 +1772,13 @@ function processWorkbookArrayBuffer(arrayBuffer, labelName){
   try{
     const data = new Uint8Array(arrayBuffer);
     const wb = XLSX.read(data, { type: 'array', cellDates: true });
-    const kind = detectWorkbookKind(wb);
-    if(kind === 'school'){
-      lastSchoolWb = wb;
-      lastSchoolFileName = labelName;
-    } else {
-      lastAttendanceWb = wb;
-      lastAttendanceFileName = labelName;
+    const hasAttendance = hasAttendanceSheets(wb);
+    const hasSchoolData = hasSchoolDataSheets(wb);
+    if(hasAttendance){ lastAttendanceWb = wb; lastAttendanceFileName = labelName; }
+    if(hasSchoolData){ lastSchoolWb = wb; lastSchoolFileName = labelName; }
+    if(!hasAttendance && !hasSchoolData){
+      // احتياط: لم نتعرّف على أي شيت مميِّز - نعامله كملف حضور افتراضياً (مثلاً شيت وحيد باسم "Sheet1")
+      lastAttendanceWb = wb; lastAttendanceFileName = labelName;
     }
     return rebuildAppFromLoadedWorkbooks();
   }catch(err){
@@ -1709,17 +1788,18 @@ function processWorkbookArrayBuffer(arrayBuffer, labelName){
   }
 }
 
-/* تحديد نوع الملف: "الحضور" أو "بيانات المدرسة" - بالبحث عن الشيتات المميِّزة لكل نوع */
-function detectWorkbookKind(wb){
-  const hasSchoolSheets = wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('اللقطات التاريخية') || n.includes('بيانات العام الدراسي') || n.includes('بيانات الفصل'));
-  if(hasSchoolSheets) return 'school';
-  return 'attendance';
+/* ملف واحد قد يحتوي شيتات الحضور وبيانات المدرسة معاً (الصيغة المدمجة الحديثة)، أو كل نوع في ملف منفصل - كلاهما مدعوم */
+function hasAttendanceSheets(wb){
+  return !!findSheet(wb, ['الغياب'], ['غياب']);
+}
+function hasSchoolDataSheets(wb){
+  return wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('جميع الطلاب') || n.includes('لقطات تاريخية') || n.includes('بيانات المدرسة') || n.includes('بيانات العام الدراسي') || n.includes('بيانات الفصل'));
 }
 
 let lastAttendanceWb = null, lastAttendanceFileName = '';
 let lastSchoolWb = null, lastSchoolFileName = '';
 
-/* يعيد بناء بيانات التطبيق من آخر ملفين محمَّلين (الحضور + بيانات المدرسة)، متسامحاً مع غياب أحدهما */
+/* يعيد بناء بيانات التطبيق من آخر ملفين محمَّلين (الحضور + بيانات المدرسة)، متسامحاً مع غياب أحدهما - وقد يكونان نفس الملف المدمج */
 function rebuildAppFromLoadedWorkbooks(){
   if(!lastAttendanceWb) return false;
   const wb = lastAttendanceWb;
@@ -1727,7 +1807,7 @@ function rebuildAppFromLoadedWorkbooks(){
   let absSheet = findSheet(wb, ['الغياب'], ['غياب']);
   if(!absSheet){
     // احتياط: ملفات النموذج الحديثة قد تسمّي الشيت الوحيد "Sheet1" دون أي كلمة مفتاحية
-    const hasSchoolLikeSheet = wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('اللقطات التاريخية'));
+    const hasSchoolLikeSheet = wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('جميع الطلاب') || n.includes('لقطات تاريخية') || n.includes('بيانات المدرسة'));
     if(!hasSchoolLikeSheet && wb.SheetNames.length) absSheet = wb.Sheets[wb.SheetNames[0]];
   }
   if(!absSheet){ alert('لم يتم العثور على ورقة بيانات الحضور في الملف.'); return false; }
@@ -1758,12 +1838,17 @@ function rebuildAppFromLoadedWorkbooks(){
       const snapRows = XLSX.utils.sheet_to_json(snapshotsSheet, { header: 1, defval: null });
       mergeSheetSnapshots(parseHistoricalSnapshotsSheet(snapRows));
     }
-    const termSheet = findSheet(lastSchoolWb, ['بيانات العام الدراسي', 'بيانات الفصول الدراسية', 'بيانات الفصل الدراسي'], ['الفصل الدراسي','العام الدراسي']);
+    const termSheet = findSheet(lastSchoolWb, ['بيانات المدرسة', 'بيانات العام الدراسي', 'بيانات الفصول الدراسية', 'بيانات الفصل الدراسي'], ['الفصل الدراسي','العام الدراسي','بيانات المدرسة']);
     if(termSheet){
       const termRows = XLSX.utils.sheet_to_json(termSheet, { header: 1, defval: null });
       const sheetTermConfig = parseTermConfigSheet(termRows);
       if(sheetTermConfig){
         termConfig = sheetTermConfig;
+        if(sheetTermConfig.schoolName) SCHOOL_NAME = sheetTermConfig.schoolName;
+        if(sheetTermConfig.principalName) PRINCIPAL_NAME = sheetTermConfig.principalName;
+        if(sheetTermConfig.studentAffairsHead) STUDENT_AFFAIRS_HEAD = sheetTermConfig.studentAffairsHead;
+        if(sheetTermConfig.studentGenderType) STUDENT_GENDER_TYPE = sheetTermConfig.studentGenderType;
+        updateSchoolIdentityDisplay();
         persistTerm();
         renderTermPanelFields();
       }
@@ -2532,8 +2617,8 @@ function openStudentModal(key){
   const todayForMsg = lastFullDay ? toDateFromKey(lastFullDay) : new Date();
   const weekLabel = lastFullDay ? (() => { const wn = weekNumberForDate(lastFullDay); return wn ? ` (الأسبوع ${wn})` : ''; })() : '';
 
-  const totalMsg = totalAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, dailyHist.length, weekLabel);
-  const dailyMsg = dailyAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, todayForMsg, weekLabel);
+  const totalMsg = totalAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, dailyHist.length, weekLabel, STUDENT_GENDER_TYPE);
+  const dailyMsg = dailyAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, todayForMsg, weekLabel, STUDENT_GENDER_TYPE);
 
   let comm = `<div class="comm-box"><div class="comm-title">📞 التواصل مع ولي الأمر${phone? (' — ' + escapeHtml(phone)) : ' (لا يوجد رقم مسجّل - يمكن إدخاله يدوياً)'}</div>
     <div class="comm-actions">
