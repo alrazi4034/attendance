@@ -437,6 +437,13 @@
     <div class="term-panel-inner">
       <h3>🏫 بيانات المدرسة</h3>
 
+      <div class="note-box" id="writeBackNote">
+        <span class="report-actions" style="margin:0;">
+          <button class="btn small primary" id="btnSaveToExcelFile">💾 حفظ كل التحديثات في ملف الإكسل</button>
+        </span>
+        يكتب هذا الزر أي تغييرات (قوائم طلاب، أرقام هواتف، لقطات، إعدادات فصل دراسي) مباشرة داخل ملف الإكسل المرتبط. يعمل فقط عند الربط عبر "🔗 ربط ملفات تلقائي" (وليس الرفع اليدوي)، ولا يمسّ ورقة "الغياب" إطلاقاً.
+      </div>
+
       <div class="school-data-section">
         <h4>📅 العام الدراسي والفصول الدراسية</h4>
         <div class="term-form-row">
@@ -1113,6 +1120,14 @@ function findSheet(wb, exactNames, containsKeywords){
   return null;
 }
 
+function findSheetName(wb, exactNames, containsKeywords){
+  for(const n of exactNames){ if(wb.Sheets[n]) return n; }
+  for(const name of wb.SheetNames){
+    for(const kw of containsKeywords){ if(name.includes(kw)) return name; }
+  }
+  return null;
+}
+
 function parseAbsenceHeader(headers){
   const col = {};
   headers.forEach((h,i) => {
@@ -1376,7 +1391,38 @@ function parseTermConfigSheet(rows){
   if(!terms.length && !schoolName) return null;
   terms.sort((a,b) => a.startDate.localeCompare(b.startDate));
   return { year, schoolName, principalName, studentAffairsHead, studentGenderType, terms, breakWeekStarts, holidayDates };
-  return { year, terms, breakWeekStarts };
+}
+
+/* بناء صفوف (AOA) شيت "اللقطات التاريخية" بنفس الصيغة التي يقرأها parseHistoricalSnapshotsSheet بالضبط */
+function buildSnapshotsSheetAOA(classNames, snapshots){
+  const rows = [['🗂️ اللقطات التاريخية'], [], ['تاريخ السريان', ...classNames]];
+  const sorted = (snapshots || []).slice().sort((a,b) => a.effectiveDate.localeCompare(b.effectiveDate));
+  sorted.forEach(s => {
+    rows.push([s.effectiveDate, ...classNames.map(cn => (s.classTotals && s.classTotals[cn] != null) ? s.classTotals[cn] : '')]);
+  });
+  return rows;
+}
+
+/* بناء صفوف (AOA) شيت "بيانات المدرسة" بنفس الصيغة التي يقرأها parseTermConfigSheet بالضبط */
+function buildSchoolDataSheetAOA(identity, termCfg){
+  identity = identity || {};
+  const rows = [];
+  rows.push(['بيانات المدرسة']);
+  rows.push(['اسم المدرسة', 'اسم مديرة المدرسة', 'اسم رئيس  شؤون الطلبة', 'العام الدراسي', 'نوع الطلاب']);
+  rows.push([identity.schoolName || '', identity.principalName || '', identity.studentAffairsHead || '', (termCfg && termCfg.year) || '', identity.studentGenderType || '']);
+  rows.push([]);
+  rows.push(['الفصول الدراسية']);
+  rows.push(['اسم الفصل', 'تاريخ البداية', 'تاريخ النهاية']);
+  const terms = (termCfg && termCfg.terms) || [];
+  terms.forEach(t => rows.push([t.label, t.startDate, t.endDate]));
+  rows.push([]);
+  rows.push(['أسابيع الاستراحة وايام العطل (اختياري)']);
+  rows.push(['تاريخ بداية أسبوع الاستراحة', 'أيام العطل الرسمية']);
+  const breaks = (termCfg && termCfg.breakWeekStarts) || [];
+  const holidays = (termCfg && termCfg.holidayDates) || [];
+  const maxLen = Math.max(breaks.length, holidays.length);
+  for(let i = 0; i < maxLen; i++) rows.push([breaks[i] || '', holidays[i] || '']);
+  return rows;
 }
 
 /* ===================== بناء بيانات التطبيق ===================== */
@@ -3473,12 +3519,18 @@ function setAutoLinkStatus(text, isError){
   autoLinkStatus.style.color = isError ? '#F5B7B7' : '#C9A227';
 }
 
+let schoolDataFileHandle = null;
+
 async function readAndProcessAllHandles(){
   let anySuccess = false;
   for(const handle of autoLinkedHandles){
     try{
       const file = await handle.getFile();
       const buf = await file.arrayBuffer();
+      try{
+        const peekWb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: false });
+        if(hasSchoolDataSheets(peekWb)) schoolDataFileHandle = handle;
+      }catch(e){ /* تجاهل - سيُعاد التحقق عند المعالجة الفعلية أدناه */ }
       const ok = processWorkbookArrayBuffer(buf, '🔗 ' + file.name);
       if(ok) anySuccess = true;
     }catch(err){
@@ -3604,6 +3656,62 @@ if(autoLinkBtn){
     initAutoLinkOnLoad();
   }
 }
+
+/* ===================== كتابة التحديثات (قوائم الطلاب / اللقطات / بيانات المدرسة) مباشرة داخل ملف الإكسل المرتبط ===================== */
+async function saveAllSchoolDataToFile(){
+  if(!schoolDataFileHandle){
+    alert('لم يتم ربط ملف "بيانات المدرسة" عبر ميزة "🔗 ربط ملفات تلقائي" — الكتابة التلقائية تعمل فقط عبر هذه الميزة (وليس الرفع اليدوي).');
+    return false;
+  }
+  try{
+    let perm = await schoolDataFileHandle.queryPermission({ mode: 'readwrite' });
+    if(perm !== 'granted') perm = await schoolDataFileHandle.requestPermission({ mode: 'readwrite' });
+    if(perm !== 'granted'){ alert('لم تُمنح صلاحية الكتابة على الملف.'); return false; }
+
+    // قراءة طازجة للملف مباشرة قبل الكتابة - لضمان عدم فقدان أي بيانات غياب جديدة كتبها Power Automate بعد آخر قراءة لدينا
+    const file = await schoolDataFileHandle.getFile();
+    const buf = await file.arrayBuffer();
+    const freshWb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: true });
+
+    // 1) جميع الطلاب: نطبّق التحديثات المحلية (شعب/هواتف) فوق آخر نسخة مقروءة فعلياً من هذا الملف
+    const rosterSheetName = findSheetName(freshWb, ['قائمة الطلاب', 'جميع الطلاب'], ['طلاب']);
+    if(rosterSheetName){
+      let rosterRows = XLSX.utils.sheet_to_json(freshWb.Sheets[rosterSheetName], { header: 1, defval: null });
+      rosterRows = applyStoredRosterOverrides(rosterRows, rosterOverridesMap);
+      rosterRows = applyStoredPhoneOverrides(rosterRows, phoneOverridesMap);
+      freshWb.Sheets[rosterSheetName] = XLSX.utils.aoa_to_sheet(rosterRows);
+    }
+
+    // 2) اللقطات التاريخية: نعيد بناء الشيت بالكامل من كل اللقطات المعروفة حالياً (المقروءة من الملف + المكتشفة محلياً)
+    const snapSheetName = findSheetName(freshWb, ['اللقطات التاريخية', 'لقطات تاريخية'], ['لقطات']);
+    if(snapSheetName){
+      const classNames = APP.loaded ? APP.classesRegistry.map(c => c.className) : Array.from(new Set(rosterSnapshots.flatMap(s => Object.keys(s.classTotals))));
+      const aoa = buildSnapshotsSheetAOA(classNames, rosterSnapshots);
+      freshWb.Sheets[snapSheetName] = XLSX.utils.aoa_to_sheet(aoa);
+    }
+
+    // 3) بيانات المدرسة: نعيد بناء الشيت من الهوية الحالية وإعدادات الفصل الدراسي
+    const termSheetName = findSheetName(freshWb, ['بيانات المدرسة', 'بيانات العام الدراسي'], ['الفصل الدراسي','العام الدراسي','بيانات المدرسة']);
+    if(termSheetName){
+      const identity = { schoolName: SCHOOL_NAME, principalName: PRINCIPAL_NAME, studentAffairsHead: STUDENT_AFFAIRS_HEAD, studentGenderType: STUDENT_GENDER_TYPE };
+      const aoa = buildSchoolDataSheetAOA(identity, termConfig);
+      freshWb.Sheets[termSheetName] = XLSX.utils.aoa_to_sheet(aoa);
+    }
+
+    const outBytes = XLSX.write(freshWb, { type: 'array', bookType: 'xlsx' });
+    const writable = await schoolDataFileHandle.createWritable();
+    await writable.write(outBytes);
+    await writable.close();
+
+    setAutoLinkStatus('✅ تم حفظ التحديثات في ملف الإكسل بنجاح — ' + fmtTime24(new Date()));
+    await readAndProcessAllHandles(); // إعادة قراءة فورية للتأكد وعرض النتيجة النهائية
+    return true;
+  }catch(err){
+    console.error(err);
+    alert('تعذّر حفظ التحديثات في الملف: ' + err.message);
+    return false;
+  }
+}
 /* ===================== لوحة "بيانات المدرسة" الموحّدة ===================== */
 const LS_OVERRIDES_KEY = 'attendanceRosterOverrides_v1';
 let rosterOverridesMap = {};  // className -> [{name,id}]
@@ -3695,6 +3803,26 @@ document.getElementById('btnApplyPhoneBulk').addEventListener('click', () => {
   resultEl.style.color = 'var(--forest)';
   document.getElementById('phoneBulkPasteArea').value = '';
   rebuildAppFromLoadedWorkbooks();
+});
+
+document.getElementById('btnSaveToExcelFile').addEventListener('click', async () => {
+  const btn = document.getElementById('btnSaveToExcelFile');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ جارٍ الحفظ...';
+  btn.disabled = true;
+  try{
+    const ok = await saveAllSchoolDataToFile();
+    if(ok){
+      btn.textContent = '✅ تم الحفظ بنجاح';
+      setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2500);
+    } else {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }catch(e){
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 });
 /* ===================== بدء التشغيل ===================== */
 (function init(){
