@@ -100,6 +100,32 @@
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
 
+  .subtabs-nav{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap;}
+  .subtabs-nav.inner{margin-bottom:14px;}
+  .subtab-btn{padding:9px 15px;border:none;background:transparent;font-family:inherit;font-weight:700;font-size:12.5px;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;}
+  .subtab-btn:hover{color:var(--plum);}
+  .subtab-btn.active{color:var(--plum);border-bottom-color:var(--mustard);}
+  .subtab-panel{display:none;}
+  .subtab-panel.active{display:block;}
+  .subtab-panel2{display:none;}
+  .subtab-panel2.active{display:block;}
+
+  .roster-class-block{background:var(--panel);border:1px solid var(--line);margin-bottom:10px;padding:0;}
+  .roster-class-block summary{padding:12px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'Cairo',sans-serif;}
+  .roster-class-block summary::-webkit-details-marker{display:none;}
+  .roster-class-block summary::before{content:'▸';margin-inline-end:4px;color:var(--ink-soft);}
+  .roster-class-block[open] summary::before{content:'▾';}
+  .roster-class-block .class-actions{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap;}
+  .roster-class-body{padding:0 14px 14px;}
+  .roster-add-form, .roster-bulk-form{background:var(--bg);border:1px solid var(--line);padding:12px;margin-bottom:12px;}
+  .btn.tiny.danger{background:var(--berry-soft);color:var(--berry);}
+  td.mono{font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .move-target-select{font-size:11px;padding:3px 5px;}
+
+  /* أسابيع مضغوطة: صغيرة افتراضياً، تتوسع واحدة فقط عند الطلب */
+  .week-chip.collapsed{padding:5px 9px;min-width:30px;text-align:center;font-weight:700;}
+  .week-chip.expanded-normal{background:#F2F2F2;font-weight:700;}
+
   .overview-grid{display:grid;gap:16px;}
   .row-2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;}
   .row-2.balanced{grid-template-columns:1fr 1fr;}
@@ -247,6 +273,13 @@
   .class-row .csub{flex:0 0 60px;font-size:10.5px;color:var(--ink-soft);text-align:left;}
   .badge-roster{font-size:9.5px;padding:1px 7px;border-radius:0;background:var(--forest-soft);color:var(--forest);font-weight:700;}
   .badge-noroster{font-size:9.5px;padding:1px 7px;border-radius:0;background:var(--berry-soft);color:var(--berry);font-weight:700;}
+  .snapshot-box{border:1px solid var(--line);background:#fff;padding:10px 12px;margin-bottom:8px;}
+  .snapshot-box-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .snapshot-box-head .snap-date-input{width:130px;padding:4px 6px;border:1px solid var(--line);}
+  .snapshot-total{font-weight:800;color:var(--plum);font-size:12.5px;}
+  .snapshot-diffs{display:flex;flex-wrap:wrap;gap:6px;}
+  .snap-diff-tag{font-size:10.5px;padding:2px 8px;background:var(--bg);border:1px solid var(--line);color:var(--ink);}
+  .week-segment-heading{width:100%;font-family:'Cairo',sans-serif;font-weight:800;font-size:12.5px;color:var(--plum);margin:10px 0 4px;border-bottom:1px solid var(--line);padding-bottom:4px;}
   .student-modal-head{display:flex;align-items:center;gap:10px;}
   .student-modal-head .sm-avatar{width:40px;height:40px;border-radius:0;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-weight:800;font-size:16px;flex:0 0 auto;}
   .student-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:12.3px;margin-bottom:12px;}
@@ -305,8 +338,8 @@
   .ssum-kpi{background:var(--bg);border-radius:0;padding:10px 12px;text-align:center;}
   .ssum-kpi .n{font-family:'Cairo',sans-serif;font-size:20px;font-weight:800;color:var(--plum);}
   .ssum-kpi .l{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
-  .grade-summary-row{display:flex;flex-wrap:wrap;gap:8px;}
-  .grade-summary-chip{background:var(--bg);border:1px solid var(--line);border-radius:0;padding:5px 10px;font-size:11px;}
+  .grade-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .grade-summary-chip{background:var(--bg);border:1px solid var(--line);border-radius:0;padding:4px 10px;font-size:10.5px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:0;}
   .grade-summary-chip b{color:var(--plum);}
   .daily-grade-block{margin-bottom:18px;}
   .daily-grade-title{font-family:'Cairo',sans-serif;font-size:13.5px;font-weight:800;color:var(--plum);margin-bottom:8px;}
@@ -423,98 +456,14 @@
         <button class="btn primary" id="btnUploadTop">📂 رفع / تحديث الملفات</button>
         <button class="btn" id="btnAutoLinkFile" style="display:none;">🔗 ربط ملفات تلقائي (محلي)</button>
         <button class="btn" id="btnAutoLinkAddFile" style="display:none;">➕ ربط ملف إضافي</button>
-        <button class="btn" id="btnToggleSchoolData" style="display:none;">🏫 بيانات المدرسة</button>
         <button class="btn" id="btnClearData" style="display:none;">🗑️ مسح البيانات</button>
         <span id="fileNameTag"></span>
         <span id="linkedFilesStatus"></span>
         <span id="autoLinkStatus"></span>
       </div>
     </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm" multiple>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.json" multiple>
   </header>
-
-  <div class="term-panel no-print" id="schoolDataPanel">
-    <div class="term-panel-inner">
-      <h3>🏫 بيانات المدرسة</h3>
-
-      <div class="note-box" id="writeBackNote" style="border-inline-start:3px solid var(--berry);">
-        <span class="report-actions" style="margin:0;">
-          <button class="btn small" id="btnSaveToExcelFile" disabled style="opacity:.5;cursor:not-allowed;">💾 معطَّلة مؤقتاً — تُتلف جدول "الغياب"</button>
-        </span>
-        ⚠️ <b>هذه الميزة معطَّلة حالياً بعد اكتشاف أنها تحذف تعريف جدول Excel في ورقة "الغياب"، مما يمنع Power Automate من التعرف عليه.</b> لن تعمل حتى نبني حلاً آمنًا لا يمسّ الملف المرتبط بالفورم إطلاقاً.
-      </div>
-
-      <div class="school-data-section">
-        <h4>📅 العام الدراسي والفصول الدراسية</h4>
-        <div class="term-form-row">
-          <div class="filter-group">
-            <span class="filter-label">العام الدراسي</span>
-            <input type="text" id="academicYearInput" placeholder="مثال: 2026-2027" style="width:140px;">
-          </div>
-          <div class="filter-group">
-            <span class="filter-label">الفصول الدراسية المشمولة (اختيار متعدد)</span>
-            <div class="chip-row" id="chipTermLabels">
-              <span class="chip" data-label="الفصل الدراسي الأول">الفصل الدراسي الأول</span>
-              <span class="chip" data-label="الفصل الدراسي الثاني">الفصل الدراسي الثاني</span>
-              <span class="chip" data-label="الفصل الدراسي الثالث">الفصل الدراسي الثالث</span>
-            </div>
-          </div>
-          <div class="filter-group"><span class="filter-label">تاريخ بداية الفترة</span><input type="date" id="termStart"></div>
-          <div class="filter-group"><span class="filter-label">تاريخ نهاية الفترة</span><input type="date" id="termEnd"></div>
-          <button class="btn small primary" id="btnComputeWeeks">احتساب الأسابيع</button>
-        </div>
-        <div id="weeksPreviewWrap" style="display:none;">
-          <div class="term-legend">اضغط على الأسبوع لتدويره بين: عادي ← <b style="color:#8A6A1E;">استراحة</b> (يمكن اختيار أكثر من أسبوع) ← <b style="color:#7A2E3D;">نهاية فصل دراسي</b> (يبدأ بعده ترقيم فصل جديد من الأسبوع 1) ← عادي.</div>
-          <div class="weeks-preview" id="weeksPreview"></div>
-        </div>
-        <div class="report-actions">
-          <button class="btn small primary" id="btnSaveTerm">💾 حفظ إعدادات الفصل</button>
-          <button class="btn small danger" id="btnClearTermOnly" style="display:none;">إلغاء تفعيل نظام الفصل</button>
-        </div>
-      </div>
-
-      <div class="school-data-section">
-        <h4>🗂️ اللقطات التاريخية
-          <span class="report-actions" style="margin:0;">
-            <button class="btn small" id="btnExportSnapshots">⬇️ نسخة احتياطية</button>
-            <button class="btn small" id="btnImportSnapshotsTrigger">⬆️ استيراد</button>
-            <button class="btn small" id="btnCopySnapshotsForSheet">📋 نسخ لشيت "اللقطات التاريخية"</button>
-            <input type="file" id="importSnapshotsInput" accept=".json" style="display:none;">
-          </span>
-        </h4>
-        <div class="note-box">تُحفظ لقطة تلقائياً كل مرة تتغيّر فيها أعداد الشعب عن آخر رفعة. الشارة "من شيت الملف" تعني أن اللقطة مقروءة فعلياً من ملف بيانات المدرسة المرتبط؛ غيابها يعني أنها محفوظة محلياً في هذا المتصفح فقط.</div>
-        <div id="rosterSnapshotsList"></div>
-        <textarea id="snapshotsSheetPasteArea" readonly style="display:none;width:100%;height:120px;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px;border:1px solid var(--line);"></textarea>
-      </div>
-
-      <div class="school-data-section">
-        <h4>👥 تحديث قائمة طلاب شعبة (نسخ ولصق)</h4>
-        <div class="note-box">اختر الشعبة، والصق قائمة الطلاب بصيغة "اسم الطالب (رقمه)" — سطر لكل طالب. سيُستبدل كل طلاب هذه الشعبة بالكامل بالقائمة الملصقة.</div>
-        <div class="term-form-row">
-          <div class="filter-group"><span class="filter-label">الشعبة</span><select id="rosterUpdateClassSelect"></select></div>
-        </div>
-        <textarea id="rosterUpdatePasteArea" placeholder="اسم الطالب الأول (رقمه)&#10;اسم الطالب الثاني (رقمه)" style="width:100%;height:130px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:8px;border:1px solid var(--line);"></textarea>
-        <div class="report-actions">
-          <button class="btn small primary" id="btnApplyRosterUpdate">تحديث القائمة</button>
-          <span id="rosterUpdateResult" style="font-size:11.5px;"></span>
-        </div>
-      </div>
-
-      <div class="school-data-section">
-        <h4>📞 تحديث أرقام الهواتف (نسخ ولصق جماعي)</h4>
-        <div class="note-box">حدد الشعبة أعلاه، ثم الصق رقمًا في كل سطر (أي صيغة: 05xxxxxxxx أو 5xxxxxxxx أو 00971xxxxxxxxx أو +971xxxxxxxxx) — تتحول تلقائيًا لصيغة 971xxxxxxxxx. عدد الأسطر يجب أن يطابق عدد طلاب الشعبة المختارة حالياً، بنفس ترتيبهم.</div>
-        <textarea id="phoneBulkPasteArea" placeholder="0501234567&#10;0509876543" style="width:100%;height:130px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:8px;border:1px solid var(--line);"></textarea>
-        <div class="report-actions">
-          <button class="btn small primary" id="btnApplyPhoneBulk">تطبيق الأرقام</button>
-          <span id="phoneBulkResult" style="font-size:11.5px;"></span>
-        </div>
-      </div>
-
-      <div class="report-actions">
-        <button class="btn small primary" id="btnCloseSchoolDataPanel">إغلاق</button>
-      </div>
-    </div>
-  </div>
 
   <div class="upload-screen" id="uploadScreen">
     <div class="dropzone" id="dropzone">
@@ -532,6 +481,7 @@
       <button class="tab-btn" data-tab="overview">📊 إحصائيات</button>
       <button class="tab-btn" data-tab="detail">📋 السجل التفصيلي</button>
       <button class="tab-btn" data-tab="teachers">👨‍🏫 تقرير المعلمين</button>
+      <button class="tab-btn" data-tab="schoolData">🏫 بيانات المدرسة</button>
     </div>
   </nav>
 
@@ -572,14 +522,15 @@
     <section class="tab-panel active" id="panel-daily">
       <div class="wrap">
         <div class="daily-nav-bar">
-          <button class="btn small primary" id="btnDailyPrev">اليوم التالي ▶</button>
+          <button class="btn small primary" id="btnDailyPrev">اليوم السابق ▶</button>
           <div class="daily-date-picker">
             <input type="date" id="dailyDateInput">
             <span id="dailyDateWeekday" class="daily-weekday"></span>
           </div>
-          <button class="btn small primary" id="btnDailyNext">◀ اليوم السابق</button>
+          <button class="btn small primary" id="btnDailyNext">◀ اليوم التالي</button>
           <button class="btn small" id="btnDailyLatest">📍 أحدث يوم</button>
-          <button class="btn small primary" id="btnDailyReportPrint" style="margin-inline-start:auto;">🖨️ إصدار التقرير اليومي</button>
+          <button class="btn small primary" id="btnHolidayToday" style="margin-inline-start:auto;">🌴 تحويل هذا اليوم لعطلة</button>
+          <button class="btn small primary" id="btnDailyReportPrint">🖨️ إصدار التقرير اليومي</button>
         </div>
 
         <div id="dailyAlertBox"></div>
@@ -754,6 +705,120 @@
       </div>
     </section>
 
+    <!-- ===== بيانات المدرسة ===== -->
+    <section class="tab-panel" id="panel-schoolData">
+      <div class="wrap">
+
+        <div class="note-box" id="writeBackNote">
+          <span class="report-actions" style="margin:0;">
+            <button class="btn small primary" id="btnSaveToExcelFile">💾 حفظ إلى ملف بيانات المدرسة (JSON)</button>
+          </span>
+          يحفظ هذا الزر إعدادات الفصل الدراسي وهوية المدرسة واللقطات التاريخية في ملف <b>بيانات المدرسة (JSON)</b> المرتبط، ولا يمسّ أبداً ملف الحضور (xlsx) المرتبط بالفورم وبـ Power Automate.
+        </div>
+
+        <nav class="subtabs-nav" id="schoolDataSubtabsNav">
+          <button class="subtab-btn active" data-subtab="roster">👥 قوائم الصفوف</button>
+          <button class="subtab-btn" data-subtab="term">📅 بيانات العام الدراسي</button>
+          <button class="subtab-btn" data-subtab="identity">🏫 بيانات المدرسة</button>
+          <button class="subtab-btn" data-subtab="snapshots">🗂️ لقطات تاريخية</button>
+        </nav>
+
+        <!-- ---- قوائم الصفوف ---- -->
+        <div class="subtab-panel active" id="subtab-roster">
+          <div class="report-actions" style="justify-content:flex-start;margin-bottom:12px;">
+            <button class="btn small primary" id="btnAddNewClass">➕ إضافة شعبة جديدة</button>
+          </div>
+          <div id="rosterClassesEditor"></div>
+        </div>
+
+        <!-- ---- بيانات العام الدراسي ---- -->
+        <div class="subtab-panel" id="subtab-term">
+          <nav class="subtabs-nav inner" id="termSubtabsNav">
+            <button class="subtab-btn active" data-subtab2="termInfo">📅 بيانات العام الدراسي</button>
+            <button class="subtab-btn" data-subtab2="termWeeks">🗓️ الأسابيع</button>
+            <button class="subtab-btn" data-subtab2="holidays">🌴 أيام العطل</button>
+          </nav>
+
+          <div class="subtab-panel2 active" id="subtab2-termInfo">
+            <div class="school-data-section">
+              <div class="term-form-row">
+                <div class="filter-group">
+                  <span class="filter-label">العام الدراسي</span>
+                  <input type="text" id="academicYearInput" placeholder="مثال: 2026-2027" style="width:140px;">
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label">الفصول الدراسية المشمولة (اختيار متعدد)</span>
+                  <div class="chip-row" id="chipTermLabels">
+                    <span class="chip" data-label="الفصل الدراسي الأول">الفصل الدراسي الأول</span>
+                    <span class="chip" data-label="الفصل الدراسي الثاني">الفصل الدراسي الثاني</span>
+                    <span class="chip" data-label="الفصل الدراسي الثالث">الفصل الدراسي الثالث</span>
+                  </div>
+                </div>
+                <div class="filter-group"><span class="filter-label">تاريخ بداية الفترة</span><input type="date" id="termStart"></div>
+                <div class="filter-group"><span class="filter-label">تاريخ نهاية الفترة</span><input type="date" id="termEnd"></div>
+                <button class="btn small primary" id="btnComputeWeeks">احتساب الأسابيع</button>
+              </div>
+              <div class="report-actions">
+                <button class="btn small primary" id="btnSaveTerm">💾 حفظ إعدادات الفصل</button>
+                <button class="btn small danger" id="btnClearTermOnly" style="display:none;">إلغاء تفعيل نظام الفصل</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="subtab-panel2" id="subtab2-termWeeks">
+            <div class="school-data-section">
+              <div id="weeksPreviewWrap" style="display:none;">
+                <div class="term-legend">اضغط على الأسبوع: ١) يتوسع ويظهر تاريخه ٢) استراحة ٣) نهاية فصل (يبدأ بعدها ترقيم جديد من الأسبوع 1) ٤) يعود صغيراً. توسيع أسبوع يُلغي توسيع أي أسبوع آخر تلقائياً.</div>
+                <div class="weeks-preview" id="weeksPreview"></div>
+              </div>
+              <div class="note-box" id="weeksEmptyNote" style="display:none;">احسب الأسابيع أولاً من تبويب "بيانات العام الدراسي" أعلاه.</div>
+            </div>
+          </div>
+
+          <div class="subtab-panel2" id="subtab2-holidays">
+            <div class="school-data-section">
+              <div class="report-actions" style="justify-content:flex-start;margin-bottom:12px;">
+                <button class="btn small primary" id="btnAddHoliday">➕ إضافة يوم عطلة</button>
+              </div>
+              <div class="note-box">أيام العطل الفردية (كالأعياد والمناسبات الرسمية) — منفصلة عن أسابيع الاستراحة أعلاه. يمكن إضافة يوم واحد أو نطاق متتالٍ من الأيام.</div>
+              <div id="holidaysList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- بيانات المدرسة (الهوية) ---- -->
+        <div class="subtab-panel" id="subtab-identity">
+          <div class="school-data-section">
+            <div class="term-form-row">
+              <div class="filter-group"><span class="filter-label">اسم المدرسة</span><input type="text" id="schoolNameInput" style="width:260px;"></div>
+              <div class="filter-group"><span class="filter-label">اسم مدير/ة المدرسة</span><input type="text" id="principalNameInput" style="width:220px;"></div>
+              <div class="filter-group"><span class="filter-label">اسم رئيس شؤون الطلاب</span><input type="text" id="affairsHeadInput" style="width:220px;"></div>
+              <div class="filter-group">
+                <span class="filter-label">نوع الطلاب</span>
+                <select id="genderTypeSelect" style="padding:8px 10px;border:1px solid var(--line);">
+                  <option value="">— غير محدد (ابنكم/ابنتكم) —</option>
+                  <option value="بنين">بنين</option>
+                  <option value="بنات">بنات</option>
+                </select>
+              </div>
+              <button class="btn small primary" id="btnSaveIdentity">💾 حفظ بيانات المدرسة</button>
+            </div>
+            <div class="note-box">يتحكم "نوع الطلاب" بصيغة رسائل واتساب لأولياء الأمور ("ابنكم" أو "ابنتكم") — عند عدم التحديد تُستخدم صيغة "ابنكم/ابنتكم" العامة.</div>
+          </div>
+        </div>
+
+        <!-- ---- لقطات تاريخية ---- -->
+        <div class="subtab-panel" id="subtab-snapshots">
+          <div class="school-data-section">
+            <h4>🗂️ لقطات تاريخية</h4>
+            <div class="note-box">تُحفظ لقطة تلقائياً كل مرة تتغيّر فيها أعداد الشعب عن آخر رفعة. الشارة "من ملف بيانات المدرسة" تعني أن اللقطة مقروءة فعلياً من ملف بيانات المدرسة (JSON) المرتبط؛ غيابها يعني أنها محفوظة محلياً في هذا المتصفح فقط.</div>
+            <div id="rosterSnapshotsList"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
 
@@ -778,6 +843,22 @@
   </div>
 
   <!-- ===== نافذة التواصل عبر واتساب ===== -->
+  <!-- ===== نافذة نقل طالب ===== -->
+  <div class="modal-overlay" id="transferStudentModal">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-head">➡️ نقل طالب</div>
+      <div class="modal-body">
+        <div class="note-box" id="transferStudentInfo" style="margin-bottom:10px;"></div>
+        <label class="filter-label" style="display:block;margin-bottom:6px;">نقل إلى شعبة (نفس المرحلة فقط)</label>
+        <select id="transferTargetSelect" style="width:100%;padding:8px 10px;border:1px solid var(--line);"></select>
+      </div>
+      <div class="modal-foot">
+        <button class="btn small primary" id="btnConfirmTransfer">تأكيد النقل</button>
+        <button class="btn small" id="btnCloseTransferModal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="waModal">
     <div class="modal-box" style="max-width:420px;">
       <div class="modal-head">📩 التواصل عبر واتساب</div>
@@ -1095,8 +1176,8 @@ function buildWALink(phone, message){
 function childRefPhrase(genderType){
   const t = (genderType || '').trim();
   if(t.includes('اناث') || t.includes('إناث') || t.includes('بنات')) return 'ابنتكم الطالبة';
-  if(t.includes('مختلط')) return 'ابنكم/ابنتكم الطالب(ة)';
-  return 'ابنكم الطالب'; // الافتراضي: بنين
+  if(t.includes('بنين') || t.includes('ذكور')) return 'ابنكم الطالب';
+  return 'ابنكم/ابنتكم الطالب(ة)'; // الافتراضي عند عدم تحديد نوع الطلاب
 }
 
 function totalAbsenceInquiryMessage(schoolName, studentName, className, totalDays, weekLabel, genderType){
@@ -1139,6 +1220,7 @@ function parseAbsenceHeader(headers){
     else if(t === 'Name') col.teacher = i;
     else if(t === 'الحصة') col.period = i;
     else if(t === 'الصف') col.recordedClass = i;
+    else if(t === 'الغائبين' || t === 'الغائبون') col.singleAbsentees = i;
   });
   if(col.start == null) col.start = col.startFallback != null ? col.startFallback : 1;
   if(col.email == null) col.email = 2;
@@ -1476,29 +1558,58 @@ function buildAppData(absRows, rosterRows){
   winners.forEach(rr => {
     const { row, date, teacherName, period, recordedClassRaw } = rr;
     let rowAbsentCount = 0;
-    classCols.forEach(cc => {
-      const val = row[cc.index];
-      if(val == null) return;
-      const s = val.toString().trim();
-      if(!s) return;
-      const parts = splitAbsenteeList(s);
-      parts.forEach(p => {
-        const { name, id: rawId } = parseStudentEntry(p);
-        const id = normalizeDigits(rawId);
-        const rosterEntry = (id && roster.has(id)) ? roster.get(id) : null;
-        rowAbsentCount++;
-        records.push({
-          date, teacherName, period,
-          recordedClass: cc.className,
-          studentName: rosterEntry ? rosterEntry.studentName : name,
-          studentId: id,
-          currentClass: rosterEntry ? rosterEntry.className : cc.className,
-          currentGrade: rosterEntry ? rosterEntry.grade : gradeFromClassName(cc.className),
-          phone: rosterEntry ? rosterEntry.phone : '',
-          inRoster: !!rosterEntry
+
+    if(col.singleAbsentees != null){
+      // الصيغة الجديدة (بعد Power Automate): عمود واحد "الغائبين"، والشعبة تُؤخذ من عمود "الصف" مباشرة
+      const val = row[col.singleAbsentees];
+      if(val != null){
+        const s = val.toString().trim();
+        if(s){
+          const parts = splitAbsenteeList(s);
+          parts.forEach(p => {
+            const { name, id: rawId } = parseStudentEntry(p);
+            const id = normalizeDigits(rawId);
+            const rosterEntry = (id && roster.has(id)) ? roster.get(id) : null;
+            rowAbsentCount++;
+            records.push({
+              date, teacherName, period,
+              recordedClass: recordedClassRaw,
+              studentName: rosterEntry ? rosterEntry.studentName : name,
+              studentId: id,
+              currentClass: rosterEntry ? rosterEntry.className : recordedClassRaw,
+              currentGrade: rosterEntry ? rosterEntry.grade : gradeFromClassName(recordedClassRaw),
+              phone: rosterEntry ? rosterEntry.phone : '',
+              inRoster: !!rosterEntry
+            });
+          });
+        }
+      }
+    } else {
+      // الصيغة القديمة: عمود منفصل لكل شعبة (توافق مع ملفات سابقة)
+      classCols.forEach(cc => {
+        const val = row[cc.index];
+        if(val == null) return;
+        const s = val.toString().trim();
+        if(!s) return;
+        const parts = splitAbsenteeList(s);
+        parts.forEach(p => {
+          const { name, id: rawId } = parseStudentEntry(p);
+          const id = normalizeDigits(rawId);
+          const rosterEntry = (id && roster.has(id)) ? roster.get(id) : null;
+          rowAbsentCount++;
+          records.push({
+            date, teacherName, period,
+            recordedClass: cc.className,
+            studentName: rosterEntry ? rosterEntry.studentName : name,
+            studentId: id,
+            currentClass: rosterEntry ? rosterEntry.className : cc.className,
+            currentGrade: rosterEntry ? rosterEntry.grade : gradeFromClassName(cc.className),
+            phone: rosterEntry ? rosterEntry.phone : '',
+            inRoster: !!rosterEntry
+          });
         });
       });
-    });
+    }
 
     allSubmissions.push({ date, period, class: recordedClassRaw || null, teacherName, absentCount: rowAbsentCount });
   });
@@ -1818,14 +1929,8 @@ function processWorkbookArrayBuffer(arrayBuffer, labelName){
   try{
     const data = new Uint8Array(arrayBuffer);
     const wb = XLSX.read(data, { type: 'array', cellDates: true });
-    const hasAttendance = hasAttendanceSheets(wb);
-    const hasSchoolData = hasSchoolDataSheets(wb);
-    if(hasAttendance){ lastAttendanceWb = wb; lastAttendanceFileName = labelName; }
-    if(hasSchoolData){ lastSchoolWb = wb; lastSchoolFileName = labelName; }
-    if(!hasAttendance && !hasSchoolData){
-      // احتياط: لم نتعرّف على أي شيت مميِّز - نعامله كملف حضور افتراضياً (مثلاً شيت وحيد باسم "Sheet1")
-      lastAttendanceWb = wb; lastAttendanceFileName = labelName;
-    }
+    // ملف الحضور أصبح يحتوي شيت "الغياب" فقط دائماً (بيانات المدرسة انتقلت إلى ملف JSON منفصل)
+    lastAttendanceWb = wb; lastAttendanceFileName = labelName;
     return rebuildAppFromLoadedWorkbooks();
   }catch(err){
     console.error(err);
@@ -1834,40 +1939,43 @@ function processWorkbookArrayBuffer(arrayBuffer, labelName){
   }
 }
 
-/* ملف واحد قد يحتوي شيتات الحضور وبيانات المدرسة معاً (الصيغة المدمجة الحديثة)، أو كل نوع في ملف منفصل - كلاهما مدعوم */
+/* قراءة ملف بيانات المدرسة (JSON) من نص، وإعادة بناء التطبيق إن كان ملف الحضور محمَّلاً مسبقاً */
+function processSchoolDataJSONText(text, labelName){
+  try{
+    const obj = JSON.parse(text);
+    schoolDataJSON = obj;
+    if(lastAttendanceWb) rebuildAppFromLoadedWorkbooks();
+    return true;
+  }catch(err){
+    console.error(err);
+    alert('تعذّرت قراءة ملف بيانات المدرسة. تأكد من أنه ملف JSON صالح تم إنشاؤه بواسطة هذه اللوحة.');
+    return false;
+  }
+}
+
+/* ملف بيانات المدرسة لم يعد ملف Excel، بل ملف JSON واحد يحوي ثلاثة مفاتيح:
+   rosterRows / snapshotsRows / schoolDataRows - كل منها بنفس صيغة صفوف (AOA) الشيت المقابل سابقاً بالضبط،
+   حتى تبقى دوال التحليل (parseHistoricalSnapshotsSheet / parseTermConfigSheet) وغيرها كما هي دون تعديل. */
 function hasAttendanceSheets(wb){
   return !!findSheet(wb, ['الغياب'], ['غياب']);
 }
-function hasSchoolDataSheets(wb){
-  return wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('جميع الطلاب') || n.includes('لقطات تاريخية') || n.includes('بيانات المدرسة') || n.includes('بيانات العام الدراسي') || n.includes('بيانات الفصل'));
-}
+function isJSONFileName(name){ return /\.json$/i.test(name || ''); }
 
 let lastAttendanceWb = null, lastAttendanceFileName = '';
-let lastSchoolWb = null, lastSchoolFileName = '';
+let schoolDataJSON = null; // { rosterRows, snapshotsRows, schoolDataRows }
 
-/* يعيد بناء بيانات التطبيق من آخر ملفين محمَّلين (الحضور + بيانات المدرسة)، متسامحاً مع غياب أحدهما - وقد يكونان نفس الملف المدمج */
+/* يعيد بناء بيانات التطبيق من ملف الحضور (شيت "الغياب" فقط) + ملف بيانات المدرسة (JSON)، متسامحاً مع غياب أحدهما */
 function rebuildAppFromLoadedWorkbooks(){
   if(!lastAttendanceWb) return false;
   const wb = lastAttendanceWb;
 
   let absSheet = findSheet(wb, ['الغياب'], ['غياب']);
-  if(!absSheet){
-    // احتياط: ملفات النموذج الحديثة قد تسمّي الشيت الوحيد "Sheet1" دون أي كلمة مفتاحية
-    const hasSchoolLikeSheet = wb.SheetNames.some(n => n.includes('قائمة الطلاب') || n.includes('جميع الطلاب') || n.includes('لقطات تاريخية') || n.includes('بيانات المدرسة'));
-    if(!hasSchoolLikeSheet && wb.SheetNames.length) absSheet = wb.Sheets[wb.SheetNames[0]];
-  }
+  if(!absSheet && wb.SheetNames.length) absSheet = wb.Sheets[wb.SheetNames[0]];
   if(!absSheet){ alert('لم يتم العثور على ورقة بيانات الحضور في الملف.'); return false; }
   const absRows = XLSX.utils.sheet_to_json(absSheet, { header: 1, defval: null });
 
-  // مصدر قائمة الطلاب: ملف بيانات المدرسة إن كان مرتبطاً، وإلا نبحث كاحتياط داخل ملف الحضور نفسه (توافق مع الملفات القديمة)
-  let rosterRows = [[]];
-  if(lastSchoolWb){
-    const rosterSheet = findSheet(lastSchoolWb, ['قائمة الطلاب', 'جميع الطلاب'], ['طلاب']);
-    if(rosterSheet) rosterRows = XLSX.utils.sheet_to_json(rosterSheet, { header: 1, defval: null });
-  } else {
-    const legacyRosterSheet = findSheet(wb, ['جميع الطلاب'], ['طلاب','جميع']);
-    if(legacyRosterSheet) rosterRows = XLSX.utils.sheet_to_json(legacyRosterSheet, { header: 1, defval: null });
-  }
+  // مصدر قائمة الطلاب: ملف بيانات المدرسة (JSON) إن كان مرتبطاً
+  let rosterRows = (schoolDataJSON && schoolDataJSON.rosterRows) ? schoolDataJSON.rosterRows : [[]];
 
   // تطبيق التحديثات اليدوية المحفوظة محلياً (قوائم شعب/أرقام هواتف) فوق قائمة الطلاب المقروءة من الملف
   rosterRows = applyStoredRosterOverrides(rosterRows, rosterOverridesMap);
@@ -1877,17 +1985,13 @@ function rebuildAppFromLoadedWorkbooks(){
   APP = Object.assign({ loaded: true, fileName: lastAttendanceFileName }, built);
   entryReportDate = APP.availableDates.length ? APP.availableDates[APP.availableDates.length-1] : null;
 
-  // قراءة اختيارية لشيتي "اللقطات التاريخية" و"بيانات العام الدراسي" من ملف بيانات المدرسة إن كان مرتبطاً
-  if(lastSchoolWb){
-    const snapshotsSheet = findSheet(lastSchoolWb, ['اللقطات التاريخية'], ['لقطات']);
-    if(snapshotsSheet){
-      const snapRows = XLSX.utils.sheet_to_json(snapshotsSheet, { header: 1, defval: null });
-      mergeSheetSnapshots(parseHistoricalSnapshotsSheet(snapRows));
+  // قراءة اختيارية للقطات التاريخية وبيانات العام الدراسي من ملف بيانات المدرسة (JSON) إن كان مرتبطاً
+  if(schoolDataJSON){
+    if(schoolDataJSON.snapshotsRows){
+      mergeSheetSnapshots(parseHistoricalSnapshotsSheet(schoolDataJSON.snapshotsRows));
     }
-    const termSheet = findSheet(lastSchoolWb, ['بيانات المدرسة', 'بيانات العام الدراسي', 'بيانات الفصول الدراسية', 'بيانات الفصل الدراسي'], ['الفصل الدراسي','العام الدراسي','بيانات المدرسة']);
-    if(termSheet){
-      const termRows = XLSX.utils.sheet_to_json(termSheet, { header: 1, defval: null });
-      const sheetTermConfig = parseTermConfigSheet(termRows);
+    if(schoolDataJSON.schoolDataRows){
+      const sheetTermConfig = parseTermConfigSheet(schoolDataJSON.schoolDataRows);
       if(sheetTermConfig){
         termConfig = sheetTermConfig;
         if(sheetTermConfig.schoolName) SCHOOL_NAME = sheetTermConfig.schoolName;
@@ -1913,12 +2017,18 @@ function rebuildAppFromLoadedWorkbooks(){
 }
 
 function handleFile(file){
+  if(isJSONFileName(file.name)){
+    const reader = new FileReader();
+    reader.onload = evt => processSchoolDataJSONText(evt.target.result, file.name);
+    reader.readAsText(file, 'utf-8');
+    return;
+  }
   const reader = new FileReader();
   reader.onload = evt => processWorkbookArrayBuffer(evt.target.result, file.name);
   reader.readAsArrayBuffer(file);
 }
 
-/* يقبل ملفاً واحداً أو الملفين معاً (الحضور + بيانات المدرسة) دفعة واحدة، ويكتشف نوع كل منهما تلقائياً */
+/* يقبل ملفاً واحداً أو الملفين معاً (ملف الحضور xlsx + ملف بيانات المدرسة JSON) دفعة واحدة، ويكتشف نوع كل منهما تلقائياً */
 function handleFiles(fileList){
   Array.from(fileList).forEach(file => handleFile(file));
 }
@@ -1994,7 +2104,6 @@ function showApp(){
   filtersCard.style.display = 'none'; // التبويب الافتراضي هو "التقرير اليومي" وله فلاتره الخاصة
   tabContent.style.display = 'block';
   btnClearData.style.display = 'inline-flex';
-  document.getElementById('btnToggleSchoolData').style.display = 'inline-flex';
   fileNameTag.textContent = APP.fileName ? ('📄 ' + APP.fileName) : '';
 }
 
@@ -2003,7 +2112,7 @@ function updateLinkedFilesStatus(){
   if(!el) return;
   const parts = [];
   parts.push(lastAttendanceWb ? ('✅ ملف الحضور: ' + escapeHtml(lastAttendanceFileName)) : '⚠️ لم يُرفع ملف الحضور بعد');
-  parts.push(lastSchoolWb ? ('✅ ملف بيانات المدرسة: ' + escapeHtml(lastSchoolFileName)) : '⚠️ ملف بيانات المدرسة غير مرتبط (اختياري)');
+  parts.push(schoolDataJSON ? ('✅ ملف بيانات المدرسة (JSON): ' + escapeHtml(schoolDataFileHandle && schoolDataFileHandle.name || 'مرتبط')) : '⚠️ ملف بيانات المدرسة (JSON) غير مرتبط (اختياري)');
   el.innerHTML = parts.join(' &nbsp;|&nbsp; ');
 }
 
@@ -2108,11 +2217,36 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-    const noFilterTabs = ['daily', 'entry', 'teachers'];
+    const noFilterTabs = ['daily', 'entry', 'teachers', 'schoolData'];
     filtersCard.style.display = noFilterTabs.includes(btn.dataset.tab) ? 'none' : (APP.loaded ? 'block' : 'none');
     if(btn.dataset.tab === 'entry') renderEntryReport();
     if(btn.dataset.tab === 'teachers') renderTeachersReport();
     if(btn.dataset.tab === 'daily') renderDailyPage();
+    if(btn.dataset.tab === 'schoolData'){
+      renderRosterClassesEditor();
+      renderTermPanelFields();
+      renderRosterSnapshotsPanel();
+    }
+  });
+});
+
+/* ---------- تبويبات فرعية داخل "بيانات المدرسة" ---------- */
+document.querySelectorAll('#schoolDataSubtabsNav .subtab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#schoolDataSubtabsNav .subtab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#panel-schoolData > .wrap > .subtab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('subtab-' + btn.dataset.subtab).classList.add('active');
+  });
+});
+
+/* ---------- تبويبات فرعية داخلية داخل "بيانات العام الدراسي" ---------- */
+document.querySelectorAll('#termSubtabsNav .subtab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#termSubtabsNav .subtab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#subtab-term .subtab-panel2').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('subtab2-' + btn.dataset.subtab2).classList.add('active');
   });
 });
 
@@ -2884,8 +3018,39 @@ function loadTermConfig(){
   try{
     const raw = localStorage.getItem(LS_TERM_KEY);
     termConfig = raw ? JSON.parse(raw) : null;
+    if(termConfig){
+      if(termConfig.schoolName) SCHOOL_NAME = termConfig.schoolName;
+      if(termConfig.principalName) PRINCIPAL_NAME = termConfig.principalName;
+      if(termConfig.studentAffairsHead) STUDENT_AFFAIRS_HEAD = termConfig.studentAffairsHead;
+      if(termConfig.studentGenderType) STUDENT_GENDER_TYPE = termConfig.studentGenderType;
+      updateSchoolIdentityDisplay();
+    }
   }catch(e){ termConfig = null; }
 }
+
+function populateIdentityForm(){
+  const nameEl = document.getElementById('schoolNameInput');
+  if(!nameEl) return;
+  nameEl.value = SCHOOL_NAME || '';
+  document.getElementById('principalNameInput').value = PRINCIPAL_NAME || '';
+  document.getElementById('affairsHeadInput').value = STUDENT_AFFAIRS_HEAD || '';
+  document.getElementById('genderTypeSelect').value = (STUDENT_GENDER_TYPE === 'بنين' || STUDENT_GENDER_TYPE === 'بنات') ? STUDENT_GENDER_TYPE : '';
+}
+document.getElementById('btnSaveIdentity').addEventListener('click', () => {
+  SCHOOL_NAME = document.getElementById('schoolNameInput').value.trim() || SCHOOL_NAME;
+  PRINCIPAL_NAME = document.getElementById('principalNameInput').value.trim() || PRINCIPAL_NAME;
+  STUDENT_AFFAIRS_HEAD = document.getElementById('affairsHeadInput').value.trim() || null;
+  STUDENT_GENDER_TYPE = document.getElementById('genderTypeSelect').value || null;
+  updateSchoolIdentityDisplay();
+  if(!termConfig) termConfig = { year: '', terms: [], breakWeekStarts: [], holidayDates: [] };
+  termConfig.schoolName = SCHOOL_NAME;
+  termConfig.principalName = PRINCIPAL_NAME;
+  termConfig.studentAffairsHead = STUDENT_AFFAIRS_HEAD;
+  termConfig.studentGenderType = STUDENT_GENDER_TYPE;
+  persistTerm();
+  renderAll();
+  alert('تم حفظ بيانات المدرسة.');
+});
 
 /* ---------- فتح/إغلاق لوحة "بيانات المدرسة" الموحّدة (مُعرَّفة في ui4_schooldata.js) ---------- */
 
@@ -2897,40 +3062,78 @@ document.querySelectorAll('#chipTermLabels .chip').forEach(chip => {
   });
 });
 
+let expandedWeekIndex = null; // فهرس الأسبوع الموسَّع حالياً (بلا علامة) - واحد فقط في كل مرة
+let lastComputedWeeks = [];
+
 document.getElementById('btnComputeWeeks').addEventListener('click', () => {
   const s = document.getElementById('termStart').value;
   const e = document.getElementById('termEnd').value;
   if(!s || !e){ alert('يرجى إدخال تاريخ بداية ونهاية الفترة أولاً.'); return; }
   if(e < s){ alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية.'); return; }
   pendingWeekMarks = (termConfig && termConfig.startDate === s && termConfig.endDate === e) ? { ...termConfig.weekMarks } : {};
+  expandedWeekIndex = null;
   const weeks = computeWeeks(s, e);
+  lastComputedWeeks = weeks;
   renderWeeksPreview(weeks);
   document.getElementById('weeksPreviewWrap').style.display = 'block';
+  document.getElementById('weeksEmptyNote').style.display = 'none';
 });
 
+/* دورة الحالة لكل أسبوع بالنقر: صغير (رقم فقط) ← موسَّع (يظهر التاريخ، بلا علامة) ← استراحة ← نهاية فصل ← يعود صغيراً.
+   توسيع أسبوع يُلغي توسيع أي أسبوع آخر تلقائياً (خاصية واحدة فقط توسَّع في كل مرة). */
 function renderWeeksPreview(weeks){
   const box = document.getElementById('weeksPreview');
   box.innerHTML = '';
+  const chosenLabelsInOrder = TERM_LABELS_ALL.filter(l => pendingTermLabels.has(l));
+  let segmentIdx = 0;
   let localIdx = 1;
+
+  function ensureSegmentHeading(){
+    const heading = document.createElement('div');
+    heading.className = 'week-segment-heading';
+    heading.textContent = chosenLabelsInOrder[segmentIdx] || ('الفترة ' + (segmentIdx + 1));
+    box.appendChild(heading);
+  }
+  ensureSegmentHeading();
+
   weeks.forEach(w => {
     const mark = pendingWeekMarks[String(w.index)];
+    const isExpanded = expandedWeekIndex === w.index;
     const chip = document.createElement('span');
-    chip.className = 'week-chip' + (mark === 'break' ? ' mark-break' : '') + (mark === 'termEnd' ? ' mark-termend' : '');
+
     if(mark === 'termEnd'){
-      chip.textContent = 'نهاية فصل — بعدها يبدأ الأسبوع 1 من جديد (' + fmtDate(w.from) + ' → ' + fmtDate(w.to) + ')';
+      chip.className = 'week-chip mark-termend';
+      chip.textContent = 'نهاية فصل ' + localIdx + ' (' + fmtDate(w.from) + ' → ' + fmtDate(w.to) + ')';
       localIdx = 1;
+    } else if(mark === 'break'){
+      chip.className = 'week-chip mark-break';
+      chip.textContent = 'أسبوع ' + localIdx + ' — استراحة';
+      localIdx++;
+    } else if(isExpanded){
+      chip.className = 'week-chip expanded-normal';
+      chip.textContent = 'الأسبوع ' + localIdx + ': ' + fmtDate(w.from) + ' → ' + fmtDate(w.to);
+      localIdx++;
     } else {
-      chip.textContent = 'الأسبوع ' + localIdx + ': ' + fmtDate(w.from) + ' → ' + fmtDate(w.to) + (mark === 'break' ? ' — استراحة' : '');
+      chip.className = 'week-chip collapsed';
+      chip.textContent = String(localIdx);
       localIdx++;
     }
+
     chip.onclick = () => {
-      const cur = pendingWeekMarks[String(w.index)];
-      if(!cur) pendingWeekMarks[String(w.index)] = 'break';
-      else if(cur === 'break') pendingWeekMarks[String(w.index)] = 'termEnd';
-      else delete pendingWeekMarks[String(w.index)];
+      if(mark === 'termEnd'){
+        delete pendingWeekMarks[String(w.index)];
+        expandedWeekIndex = null;
+      } else if(mark === 'break'){
+        pendingWeekMarks[String(w.index)] = 'termEnd';
+      } else if(isExpanded){
+        pendingWeekMarks[String(w.index)] = 'break';
+      } else {
+        expandedWeekIndex = w.index; // يوسّع هذا الأسبوع ويُلغي توسيع أي أسبوع آخر تلقائياً
+      }
       renderWeeksPreview(weeks);
     };
     box.appendChild(chip);
+    if(mark === 'termEnd'){ segmentIdx++; ensureSegmentHeading(); }
   });
 }
 
@@ -2961,17 +3164,77 @@ document.getElementById('btnClearTermOnly').addEventListener('click', () => {
   renderAll();
 });
 
+/* ---------- أيام العطل الفردية (منفصلة عن أسابيع الاستراحة) ---------- */
+function addHolidayDates(dates){
+  if(!termConfig) termConfig = { year: '', terms: [], breakWeekStarts: [], holidayDates: [] };
+  if(!termConfig.holidayDates) termConfig.holidayDates = [];
+  dates.forEach(d => { if(!termConfig.holidayDates.includes(d)) termConfig.holidayDates.push(d); });
+  termConfig.holidayDates.sort();
+  persistTerm();
+  renderHolidaysList();
+}
+function removeHolidayDate(d){
+  if(!termConfig || !termConfig.holidayDates) return;
+  termConfig.holidayDates = termConfig.holidayDates.filter(x => x !== d);
+  persistTerm();
+  renderHolidaysList();
+}
+function addHolidayPrompt(){
+  const isRange = confirm('هل تريد إضافة أكثر من يوم متتالٍ (نطاق)؟\nOK = نطاق (من - إلى)\nCancel = يوم واحد فقط');
+  if(isRange){
+    const from = prompt('من تاريخ (yyyy-mm-dd):');
+    if(!from) return;
+    const to = prompt('إلى تاريخ (yyyy-mm-dd):');
+    if(!to) return;
+    if(to < from){ alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية.'); return; }
+    const dates = [];
+    let cur = new Date(from + 'T00:00:00');
+    const end = new Date(to + 'T00:00:00');
+    while(cur <= end){ dates.push(fmtDate(cur)); cur.setDate(cur.getDate() + 1); }
+    addHolidayDates(dates);
+  } else {
+    const d = prompt('التاريخ (yyyy-mm-dd):');
+    if(!d) return;
+    addHolidayDates([d]);
+  }
+}
+function renderHolidaysList(){
+  const box = document.getElementById('holidaysList');
+  if(!box) return;
+  const dates = (termConfig && termConfig.holidayDates) || [];
+  if(!dates.length){ box.innerHTML = '<div class="note-box">لا توجد أيام عطل مسجّلة بعد.</div>'; return; }
+  box.innerHTML = dates.slice().sort().map(d => `
+    <div class="class-row">
+      <div class="cname">${escapeHtml(d)}</div>
+      <div class="csub">${escapeHtml(weekdayName(new Date(d+'T00:00:00')))}</div>
+      <button class="btn tiny danger" data-holiday="${escapeHtml(d)}">🗑️ حذف</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-holiday]').forEach(btn => btn.addEventListener('click', () => removeHolidayDate(btn.dataset.holiday)));
+}
+document.getElementById('btnAddHoliday').addEventListener('click', addHolidayPrompt);
+
 function renderTermPanelFields(){
   document.getElementById('btnClearTermOnly').style.display = termConfig ? 'inline-flex' : 'none';
   pendingTermLabels = new Set(termConfig ? termConfig.termLabels : []);
   document.querySelectorAll('#chipTermLabels .chip').forEach(chip => chip.classList.toggle('active', pendingTermLabels.has(chip.dataset.label)));
+  renderHolidaysList();
+  populateIdentityForm();
   if(termConfig){
     document.getElementById('academicYearInput').value = termConfig.year || '';
     document.getElementById('termStart').value = termConfig.startDate || '';
     document.getElementById('termEnd').value = termConfig.endDate || '';
     pendingWeekMarks = { ...termConfig.weekMarks };
+    expandedWeekIndex = null;
     const weeks = computeWeeks(termConfig.startDate, termConfig.endDate);
-    if(weeks.length){ renderWeeksPreview(weeks); document.getElementById('weeksPreviewWrap').style.display = 'block'; }
+    lastComputedWeeks = weeks;
+    if(weeks.length){
+      renderWeeksPreview(weeks);
+      document.getElementById('weeksPreviewWrap').style.display = 'block';
+      document.getElementById('weeksEmptyNote').style.display = 'none';
+    }
+  } else {
+    document.getElementById('weeksPreviewWrap').style.display = 'none';
+    document.getElementById('weeksEmptyNote').style.display = 'block';
   }
 }
 
@@ -3119,6 +3382,12 @@ function shiftDailyDate(direction){
 }
 
 document.getElementById('btnDailyPrev').addEventListener('click', () => shiftDailyDate(-1));
+document.getElementById('btnHolidayToday').addEventListener('click', () => {
+  if(!dailyPageDate) return;
+  if(!confirm(`تسجيل يوم ${weekdayName(toDateFromKey(dailyPageDate))} الموافق ${dailyPageDate} كيوم عطلة رسمية في بيانات العام الدراسي؟`)) return;
+  addHolidayDates([dailyPageDate]);
+  alert('تم تسجيل اليوم كعطلة في بيانات العام الدراسي.');
+});
 document.getElementById('btnDailyNext').addEventListener('click', () => shiftDailyDate(1));
 document.getElementById('btnDailyLatest').addEventListener('click', () => {
   if(!APP.availableDates.length) return;
@@ -3385,20 +3654,33 @@ function renderRosterSnapshotsPanel(){
     return;
   }
   const sorted = rosterSnapshots.slice().sort((a,b) => b.effectiveDate.localeCompare(a.effectiveDate));
-  listEl.innerHTML = sorted.map((snap, i) => {
+  const latestTotal = Object.values(sorted[0].classTotals).reduce((s,n) => s + (n||0), 0);
+
+  let html = `<div class="note-box" style="font-size:14px;font-weight:800;color:var(--plum);text-align:center;padding:12px;">
+    📊 العدد الكلي للمدرسة حالياً: ${fmt(latestTotal)} طالب <span style="font-weight:400;font-size:11.5px;color:var(--ink-soft);">(بتاريخ ${escapeHtml(sorted[0].effectiveDate)})</span>
+  </div>`;
+
+  html += sorted.map((snap, i) => {
     const prev = sorted[i+1]; // الأقدم منها زمنياً (بعد الترتيب التنازلي)
     const diffs = prev ? diffClassTotals(prev.classTotals, snap.classTotals) : Object.keys(snap.classTotals).map(cn => ({ className: cn, from: '—', to: snap.classTotals[cn] }));
-    const diffText = diffs.length ? diffs.map(d => `${escapeHtml(d.className)}: ${d.from}→${d.to}`).join('، ') : 'لا تغييرات مسجّلة';
-    const sourceBadge = snap.source === 'sheet' ? '<span class="badge-roster">من شيت الملف</span>' : '';
+    const total = Object.values(snap.classTotals).reduce((s,n) => s + (n||0), 0);
+    const sourceBadge = snap.source === 'sheet' ? '<span class="badge-roster">من ملف بيانات المدرسة</span>' : '<span class="badge-noroster">محلي فقط</span>';
+    const diffTags = diffs.length
+      ? diffs.map(d => `<span class="snap-diff-tag">${escapeHtml(d.className)}: ${d.from} → ${d.to}</span>`).join('')
+      : '<span class="hint">لا تغييرات مسجّلة</span>';
     return `
-      <div class="class-row" data-snap-id="${escapeHtml(snap.id)}">
-        <div class="cname" style="flex:0 0 110px;">
-          <input type="date" class="snap-date-input" value="${escapeHtml(snap.effectiveDate)}" style="width:130px;">
+      <div class="snapshot-box" data-snap-id="${escapeHtml(snap.id)}">
+        <div class="snapshot-box-head">
+          <input type="date" class="snap-date-input" value="${escapeHtml(snap.effectiveDate)}">
+          <span class="snapshot-total">الإجمالي: ${fmt(total)} طالب</span>
+          ${sourceBadge}
+          <button class="btn tiny" data-del-snap="${escapeHtml(snap.id)}">🗑️ حذف</button>
         </div>
-        <div class="csub" style="flex:1;text-align:start;">${sourceBadge} ${diffText}</div>
-        <button class="btn tiny" data-del-snap="${escapeHtml(snap.id)}">🗑️ حذف</button>
+        <div class="snapshot-diffs">${diffTags}</div>
       </div>`;
   }).join('');
+
+  listEl.innerHTML = html;
 
   listEl.querySelectorAll('.snap-date-input').forEach(inp => {
     inp.addEventListener('change', () => {
@@ -3418,53 +3700,6 @@ function renderRosterSnapshotsPanel(){
   });
 }
 
-document.getElementById('btnCopySnapshotsForSheet').addEventListener('click', () => {
-  if(!rosterSnapshots.length){ alert('لا توجد لقطات محفوظة بعد لنسخها.'); return; }
-  const classNames = APP.loaded ? APP.classesRegistry.map(c => c.className) : Array.from(new Set(rosterSnapshots.flatMap(s => Object.keys(s.classTotals))));
-  const header = ['تاريخ السريان', ...classNames].join('\t');
-  const sorted = rosterSnapshots.slice().sort((a,b) => a.effectiveDate.localeCompare(b.effectiveDate));
-  const dataRows = sorted.map(s => [s.effectiveDate, ...classNames.map(cn => s.classTotals[cn] != null ? s.classTotals[cn] : '')].join('\t'));
-  const text = [header, ...dataRows].join('\n');
-  const ta = document.getElementById('snapshotsSheetPasteArea');
-  ta.value = text;
-  ta.style.display = 'block';
-  ta.select();
-  try{ document.execCommand('copy'); alert('تم نسخ الصفوف إلى الحافظة. الصقها في شيت "اللقطات التاريخية" (الصف الأول عناوين الأعمدة).'); }
-  catch(e){ alert('تعذّر النسخ التلقائي — حدد النص أدناه يدوياً وانسخه (Ctrl+C).'); }
-});
-
-document.getElementById('btnExportSnapshots').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(rosterSnapshots, null, 2)], { type: 'application/json;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'نسخة_احتياطية_قوائم_الطلاب.json';
-  a.click();
-});
-document.getElementById('btnImportSnapshotsTrigger').addEventListener('click', () => document.getElementById('importSnapshotsInput').click());
-document.getElementById('importSnapshotsInput').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try{
-      const parsed = JSON.parse(evt.target.result);
-      if(!Array.isArray(parsed)) throw new Error('الملف لا يحتوي على مصفوفة لقطات صالحة.');
-      const valid = parsed.filter(s => s && s.effectiveDate && s.classTotals);
-      if(!valid.length) throw new Error('لم يتم العثور على لقطات صالحة في الملف.');
-      const merge = confirm(`تم العثور على ${valid.length} لقطة في الملف.\nاضغط "موافق" للدمج مع اللقطات الحالية، أو "إلغاء" للاستبدال الكامل.`);
-      rosterSnapshots = merge ? [...rosterSnapshots, ...valid.map(s => ({ ...s, id: s.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,6)) }))]
-                              : valid.map(s => ({ ...s, id: s.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,6)) }));
-      rosterSnapshots.sort((a,b) => a.effectiveDate.localeCompare(b.effectiveDate));
-      saveRosterSnapshots();
-      renderRosterSnapshotsPanel();
-      renderAll();
-    }catch(err){
-      alert('تعذّرت قراءة ملف النسخة الاحتياطية: ' + err.message);
-    }
-    document.getElementById('importSnapshotsInput').value = '';
-  };
-  reader.readAsText(file, 'utf-8');
-});
 /* ===================== الربط التلقائي بملفات محلية (File System Access API) - يدعم ملفي الحضور وبيانات المدرسة معاً ===================== */
 const FS_DB_NAME = 'attendanceFileLinkDB';
 const FS_STORE_NAME = 'handles';
@@ -3519,20 +3754,25 @@ function setAutoLinkStatus(text, isError){
   autoLinkStatus.style.color = isError ? '#F5B7B7' : '#C9A227';
 }
 
-let schoolDataFileHandle = null;
+let schoolDataFileHandle = null; // مقبض ملف بيانات المدرسة (JSON) - يُستخدم للقراءة والكتابة معاً
 
+/* يقرأ كل الملفات المرتبطة (ملف حضور xlsx واحد على الأكثر يُعتمَد، وملف بيانات مدرسة JSON واحد يُعتمَد ويُحفظ مقبضه للكتابة لاحقاً) */
 async function readAndProcessAllHandles(){
   let anySuccess = false;
   for(const handle of autoLinkedHandles){
     try{
       const file = await handle.getFile();
-      const buf = await file.arrayBuffer();
-      try{
-        const peekWb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: false });
-        if(hasSchoolDataSheets(peekWb)) schoolDataFileHandle = handle;
-      }catch(e){ /* تجاهل - سيُعاد التحقق عند المعالجة الفعلية أدناه */ }
-      const ok = processWorkbookArrayBuffer(buf, '🔗 ' + file.name);
-      if(ok) anySuccess = true;
+      if(isJSONFileName(file.name)){
+        const text = await file.text();
+        if(processSchoolDataJSONText(text, file.name)){
+          schoolDataFileHandle = handle;
+          anySuccess = true;
+        }
+      } else {
+        const buf = await file.arrayBuffer();
+        const ok = processWorkbookArrayBuffer(buf, '🔗 ' + file.name);
+        if(ok) anySuccess = true;
+      }
     }catch(err){
       console.error(err);
     }
@@ -3547,9 +3787,11 @@ function startAutoRefreshTimer(){
   autoRefreshTimer = setInterval(readAndProcessAllHandles, AUTO_REFRESH_MINUTES * 60 * 1000);
 }
 
+/* نطلب صلاحية "readwrite" لكل الملفات المرتبطة (وليس "read" فقط)، لأن ملف بيانات المدرسة (JSON) يحتاج صلاحية كتابة
+   لحفظ إعدادات الفصل الدراسي واللقطات التاريخية. ملف الحضور xlsx يُقرأ فقط عملياً، لكن منح الصلاحية له غير ضار. */
 async function allPermissionsGranted(handles){
   for(const h of handles){
-    const perm = await h.queryPermission({ mode: 'read' });
+    const perm = await h.queryPermission({ mode: 'readwrite' });
     if(perm !== 'granted') return false;
   }
   return true;
@@ -3557,7 +3799,7 @@ async function allPermissionsGranted(handles){
 async function requestAllPermissions(handles){
   let ok = true;
   for(const h of handles){
-    const perm = await h.requestPermission({ mode: 'read' });
+    const perm = await h.requestPermission({ mode: 'readwrite' });
     if(perm !== 'granted') ok = false;
   }
   return ok;
@@ -3583,10 +3825,14 @@ async function initAutoLinkOnLoad(){
   }catch(e){ /* تجاهل - قد لا تكون الملفات موجودة بعد */ }
 }
 
-const EXCEL_PICKER_TYPES = [{ description: 'ملفات Excel', accept: {
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-  'application/vnd.ms-excel.sheet.macroEnabled.12': ['.xlsm']
-} }];
+/* نوعا الملف المدعومان: ملف الحضور (Excel، يُقرأ فقط) وملف بيانات المدرسة (JSON، يُقرأ ويُكتب) */
+const LINK_PICKER_TYPES = [
+  { description: 'ملف الحضور (Excel)', accept: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel.sheet.macroEnabled.12': ['.xlsm']
+  } },
+  { description: 'ملف بيانات المدرسة (JSON)', accept: { 'application/json': ['.json'] } }
+];
 
 async function pickAndLinkFiles(){
   if(!fsApiSupported){
@@ -3594,13 +3840,13 @@ async function pickAndLinkFiles(){
     return;
   }
   try{
-    const handles = await window.showOpenFilePicker({ multiple: true, types: EXCEL_PICKER_TYPES });
+    const handles = await window.showOpenFilePicker({ multiple: true, types: LINK_PICKER_TYPES });
     const granted = [];
     for(const h of handles){
-      const perm = await h.requestPermission({ mode: 'read' });
+      const perm = await h.requestPermission({ mode: 'readwrite' });
       if(perm === 'granted') granted.push(h);
     }
-    if(!granted.length){ setAutoLinkStatus('لم تُمنح صلاحية القراءة.', true); return; }
+    if(!granted.length){ setAutoLinkStatus('لم تُمنح صلاحية القراءة/الكتابة.', true); return; }
     autoLinkedHandles = granted;
     await saveHandlesToDB(granted);
     autoLinkBtn.textContent = '🔄 تحديث الآن';
@@ -3614,13 +3860,13 @@ async function pickAndLinkFiles(){
   }
 }
 
-/* إضافة ملف إضافي (مثلاً: ربطت ملف الحضور فقط في البداية، وتريد إضافة ملف بيانات المدرسة لاحقاً دون فقدان الأول) */
+/* إضافة ملف إضافي (مثلاً: ربطت ملف الحضور فقط في البداية، وتريد إضافة ملف بيانات المدرسة JSON لاحقاً دون فقدان الأول) */
 async function pickAndAddOneFile(){
   if(!fsApiSupported) return;
   try{
-    const [handle] = await window.showOpenFilePicker({ multiple: false, types: EXCEL_PICKER_TYPES });
-    const perm = await handle.requestPermission({ mode: 'read' });
-    if(perm !== 'granted'){ setAutoLinkStatus('لم تُمنح صلاحية القراءة.', true); return; }
+    const [handle] = await window.showOpenFilePicker({ multiple: false, types: LINK_PICKER_TYPES });
+    const perm = await handle.requestPermission({ mode: 'readwrite' });
+    if(perm !== 'granted'){ setAutoLinkStatus('لم تُمنح صلاحية القراءة/الكتابة.', true); return; }
     autoLinkedHandles = [...autoLinkedHandles, handle];
     await saveHandlesToDB(autoLinkedHandles);
     await readAndProcessAllHandles();
@@ -3657,11 +3903,44 @@ if(autoLinkBtn){
   }
 }
 
-/* ===================== كتابة التحديثات - معطَّلة مؤقتاً (سبب التعطيل: SheetJS Community Edition لا تحافظ على تعريف جداول Excel الرسمية (Tables) عند إعادة كتابة الملف بالكامل، ما يُتلف الجدول الذي يعتمد عليه Power Automate في ورقة "الغياب" حتى لو لم تُعدَّل تلك الورقة إطلاقاً) ===================== */
+/* ===================== كتابة التحديثات إلى ملف بيانات المدرسة (JSON) فقط =====================
+   هذا الملف منفصل تماماً عن ملف الحضور (xlsx) المرتبط بالفورم وبـ Power Automate، لذلك حفظه هنا
+   لا يُغيّر ولا يَمسّ ملف الحضور أو جدول Excel (FormsTable) الذي يعتمد عليه Power Automate إطلاقاً. */
 async function saveAllSchoolDataToFile(){
-  alert('⚠️ هذه الميزة معطَّلة حالياً بسبب خلل يُتلف جدول Excel في ورقة "الغياب" ويمنع Power Automate من تسجيل ردود جديدة. لا تُستخدم حتى إشعار آخر.');
-  console.error('saveAllSchoolDataToFile تم استدعاؤها وهي معطَّلة عمداً - راجع التعليق أعلاه.');
-  return false;
+  if(!schoolDataFileHandle){
+    alert('لم يتم ربط ملف بيانات المدرسة (JSON) بعد. اضغط "🔗 ربط ملفات تلقائي (محلي)" أو "➕ ربط ملف إضافي" واختر ملف بيانات_المدرسة.json.');
+    return false;
+  }
+  try{
+    const perm = await schoolDataFileHandle.queryPermission({ mode: 'readwrite' });
+    if(perm !== 'granted'){
+      const req = await schoolDataFileHandle.requestPermission({ mode: 'readwrite' });
+      if(req !== 'granted'){ alert('لم تُمنح صلاحية الكتابة لملف بيانات المدرسة.'); return false; }
+    }
+
+    const classNames = APP.loaded ? APP.classesRegistry.map(c => c.className) : [];
+    const updatedObj = {
+      // قائمة الطلاب الأساسية تبقى كما استُوردت أصلاً؛ التعديلات اليدوية (شعبة/هاتف) تبقى طبقة محلية تُطبَّق دائماً فوقها عند القراءة، ولا تُكتب هنا
+      rosterRows: (schoolDataJSON && schoolDataJSON.rosterRows) ? schoolDataJSON.rosterRows : [],
+      snapshotsRows: buildSnapshotsSheetAOA(classNames, rosterSnapshots),
+      schoolDataRows: buildSchoolDataSheetAOA(
+        { schoolName: SCHOOL_NAME, principalName: PRINCIPAL_NAME, studentAffairsHead: STUDENT_AFFAIRS_HEAD, studentGenderType: STUDENT_GENDER_TYPE },
+        termConfig
+      )
+    };
+
+    const writable = await schoolDataFileHandle.createWritable();
+    await writable.write(JSON.stringify(updatedObj, null, 2));
+    await writable.close();
+
+    schoolDataJSON = updatedObj;
+    updateLinkedFilesStatus();
+    return true;
+  }catch(err){
+    console.error(err);
+    alert('تعذّر الحفظ إلى ملف بيانات المدرسة: ' + (err && err.message ? err.message : err));
+    return false;
+  }
 }
 /* ===================== لوحة "بيانات المدرسة" الموحّدة ===================== */
 const LS_OVERRIDES_KEY = 'attendanceRosterOverrides_v1';
@@ -3684,76 +3963,277 @@ async function clearOverridesStorage(){
   rosterOverridesMap = {}; phoneOverridesMap = {};
 }
 
-/* ---------- فتح/إغلاق اللوحة الموحّدة ---------- */
-document.getElementById('btnToggleSchoolData').addEventListener('click', () => {
-  const p = document.getElementById('schoolDataPanel');
-  const opening = p.style.display !== 'block';
-  p.style.display = opening ? 'block' : 'none';
-  if(opening){
-    renderRosterSnapshotsPanel();
-    populateRosterUpdateClassSelect();
-  }
-});
-document.getElementById('btnCloseSchoolDataPanel').addEventListener('click', () => {
-  document.getElementById('schoolDataPanel').style.display = 'none';
-});
-
-function populateRosterUpdateClassSelect(){
-  const sel = document.getElementById('rosterUpdateClassSelect');
-  if(!sel) return;
-  const classes = APP.loaded ? APP.classesRegistry : [];
-  sel.innerHTML = classes.map(c => `<option value="${escapeHtml(c.className)}">${escapeHtml(c.className)} (${fmt(c.total||0)} طالب)</option>`).join('')
-    || '<option value="">لا توجد بيانات — ارفع الملفات أولاً</option>';
+/* ===================== محرر قوائم الصفوف (إضافة/حذف/نقل طالب - إضافة/حذف شعبة) ===================== */
+const LS_MANUAL_CLASSES_KEY = 'attendanceManualClasses_v1';
+let manualExtraClasses = new Set();
+function loadManualClasses(){
+  try{
+    const raw = localStorage.getItem(LS_MANUAL_CLASSES_KEY);
+    manualExtraClasses = new Set(raw ? JSON.parse(raw) : []);
+  }catch(e){ manualExtraClasses = new Set(); }
+}
+function persistManualClasses(){
+  try{ localStorage.setItem(LS_MANUAL_CLASSES_KEY, JSON.stringify(Array.from(manualExtraClasses))); }catch(e){ /* تجاهل */ }
 }
 
-/* ---------- تحديث قائمة طلاب شعبة كاملة (نسخ ولصق) ---------- */
-document.getElementById('btnApplyRosterUpdate').addEventListener('click', () => {
-  const cn = document.getElementById('rosterUpdateClassSelect').value;
-  const resultEl = document.getElementById('rosterUpdateResult');
-  if(!cn){ resultEl.textContent = '⚠️ اختر شعبة أولاً.'; resultEl.style.color = 'var(--berry)'; return; }
-  const text = document.getElementById('rosterUpdatePasteArea').value;
-  const entries = parsePastedNameList(text);
-  if(!entries.length){
-    resultEl.textContent = '⚠️ لم يتم العثور على أسماء صالحة بصيغة "الاسم (الرقم)".';
-    resultEl.style.color = 'var(--berry)';
-    return;
-  }
-  rosterOverridesMap[cn] = entries;
-  saveOverrides();
-  resultEl.textContent = `✅ تم تحديث قائمة ${cn} (${entries.length} طالب). يُطبَّق التحديث فوراً على كل الصفحات.`;
-  resultEl.style.color = 'var(--forest)';
-  document.getElementById('rosterUpdatePasteArea').value = '';
-  if(APP.loaded) rebuildAppFromLoadedWorkbooks();
-  populateRosterUpdateClassSelect();
-});
-
-/* ---------- تحديث أرقام الهواتف بالنسخ الجماعي ---------- */
-document.getElementById('btnApplyPhoneBulk').addEventListener('click', () => {
-  const cn = document.getElementById('rosterUpdateClassSelect').value;
-  const resultEl = document.getElementById('phoneBulkResult');
-  if(!cn){ resultEl.textContent = '⚠️ اختر شعبة أولاً.'; resultEl.style.color = 'var(--berry)'; return; }
-  if(!APP.loaded){ resultEl.textContent = '⚠️ ارفع ملفات البيانات أولاً.'; resultEl.style.color = 'var(--berry)'; return; }
-
-  const studentsOfClass = Array.from(APP.roster.values())
-    .filter(s => s.className === cn)
+/* يضمن وجود قائمة override كاملة وقابلة للتعديل لهذه الشعبة، مع الحفاظ على أرقام هواتف طلابها الحاليين */
+function materializeClassOverride(className){
+  if(rosterOverridesMap[className]) return;
+  const students = (APP.loaded ? Array.from(APP.roster.values()) : [])
+    .filter(s => s.className === className)
     .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
+  rosterOverridesMap[className] = students.map(s => ({ name: s.studentName, id: s.studentId }));
+  students.forEach(s => { if(s.phone && phoneOverridesMap[s.studentId] == null) phoneOverridesMap[s.studentId] = s.phone; });
+}
 
-  const lines = document.getElementById('phoneBulkPasteArea').value.split('\n').map(l => l.trim()).filter(Boolean);
-  if(lines.length !== studentsOfClass.length){
-    resultEl.textContent = `⚠️ عدد الأسطر الملصوقة (${lines.length}) لا يطابق عدد طلاب الشعبة الحالي (${studentsOfClass.length}).`;
-    resultEl.style.color = 'var(--berry)';
-    return;
-  }
+function parseBulkStudentLine(line){
+  const s = line.trim();
+  const m = s.match(/^(.*?)\(([^()]+)\)\s*([\s\S]*)$/);
+  if(!m) return null;
+  const name = m[1].trim();
+  const id = normalizeDigits(m[2].trim());
+  const phoneRaw = m[3].trim();
+  if(!name || !id) return null;
+  return { name, id, phone: phoneRaw ? normalizePhoneToUAE(phoneRaw) : '' };
+}
 
-  lines.forEach((line, i) => {
-    const phone = normalizePhoneToUAE(line);
-    if(phone) phoneOverridesMap[studentsOfClass[i].studentId] = phone;
+function insertSortedByName(list, entry){
+  let idx = list.findIndex(e => e.name.localeCompare(entry.name, 'ar') > 0);
+  if(idx === -1) list.push(entry); else list.splice(idx, 0, entry);
+}
+
+function addSingleStudent(className, name, id, phone){
+  const cleanId = normalizeDigits((id||'').trim());
+  const cleanName = (name||'').trim();
+  if(!cleanName || !cleanId) return { ok: false, message: 'الاسم والرقم مطلوبان.' };
+  materializeClassOverride(className);
+  const idx = rosterOverridesMap[className].findIndex(e => e.id === cleanId);
+  if(idx >= 0) rosterOverridesMap[className][idx] = { name: cleanName, id: cleanId };
+  else insertSortedByName(rosterOverridesMap[className], { name: cleanName, id: cleanId });
+  if(phone) phoneOverridesMap[cleanId] = normalizePhoneToUAE(phone);
+  saveOverrides();
+  rebuildAppFromLoadedWorkbooks();
+  return { ok: true };
+}
+
+function bulkAddStudents(className, text){
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const parsed = lines.map(parseBulkStudentLine).filter(Boolean);
+  if(!parsed.length) return { count: 0 };
+  materializeClassOverride(className);
+  parsed.forEach(p => {
+    const idx = rosterOverridesMap[className].findIndex(e => e.id === p.id);
+    if(idx >= 0) rosterOverridesMap[className][idx] = { name: p.name, id: p.id };
+    else insertSortedByName(rosterOverridesMap[className], { name: p.name, id: p.id });
+    if(p.phone) phoneOverridesMap[p.id] = p.phone;
   });
   saveOverrides();
-  resultEl.textContent = `✅ تم تحديث ${lines.length} رقم لشعبة ${cn}.`;
-  resultEl.style.color = 'var(--forest)';
-  document.getElementById('phoneBulkPasteArea').value = '';
   rebuildAppFromLoadedWorkbooks();
+  return { count: parsed.length };
+}
+
+function deleteStudentFromClass(className, studentId){
+  materializeClassOverride(className);
+  rosterOverridesMap[className] = rosterOverridesMap[className].filter(e => e.id !== studentId);
+  saveOverrides();
+  rebuildAppFromLoadedWorkbooks();
+}
+
+function moveStudentToClass(fromClass, toClass, studentId){
+  if(fromClass === toClass) return;
+  if(gradeFromClassName(fromClass) !== gradeFromClassName(toClass)){
+    alert('لا يُسمح بنقل الطالب إلا بين شعب نفس المرحلة الدراسية.');
+    return;
+  }
+  materializeClassOverride(fromClass);
+  materializeClassOverride(toClass);
+  const idx = rosterOverridesMap[fromClass].findIndex(e => e.id === studentId);
+  if(idx < 0) return;
+  const [entry] = rosterOverridesMap[fromClass].splice(idx, 1);
+  rosterOverridesMap[toClass].push(entry);
+  saveOverrides();
+  rebuildAppFromLoadedWorkbooks();
+}
+
+/* ---------- نافذة نقل طالب (بين شعب نفس المرحلة فقط) ---------- */
+function openTransferModal(fromClass, studentId, studentName){
+  const modal = document.getElementById('transferStudentModal');
+  const select = document.getElementById('transferTargetSelect');
+  document.getElementById('transferStudentInfo').textContent = studentName + ' — من شعبة ' + fromClass;
+  const grade = gradeFromClassName(fromClass);
+  const sameGradeClasses = getAllClassNamesForEditor().filter(c => c.className !== fromClass && c.grade === grade);
+  select.innerHTML = sameGradeClasses.map(c => `<option value="${escapeHtml(c.className)}">${escapeHtml(c.className)}</option>`).join('')
+    || '<option value="">لا توجد شعب أخرى في نفس المرحلة</option>';
+  modal.dataset.fromClass = fromClass;
+  modal.dataset.studentId = studentId;
+  modal.style.display = 'flex';
+}
+document.getElementById('btnCloseTransferModal').addEventListener('click', () => {
+  document.getElementById('transferStudentModal').style.display = 'none';
+});
+document.getElementById('btnConfirmTransfer').addEventListener('click', () => {
+  const modal = document.getElementById('transferStudentModal');
+  const target = document.getElementById('transferTargetSelect').value;
+  if(!target) return;
+  moveStudentToClass(modal.dataset.fromClass, target, modal.dataset.studentId);
+  modal.style.display = 'none';
+  renderRosterClassesEditor();
+});
+
+
+function addNewClassPrompt(){
+  const name = prompt('اسم الشعبة الجديدة (مثال: السادس/3):');
+  if(!name) return;
+  const cn = normalizeClassName(name);
+  if(!cn) return;
+  if(manualExtraClasses.has(cn) || (APP.loaded && APP.classesRegistry.some(c => c.className === cn))){
+    alert('الشعبة "' + cn + '" موجودة مسبقاً.');
+    return;
+  }
+  manualExtraClasses.add(cn);
+  materializeClassOverride(cn);
+  persistManualClasses();
+  saveOverrides();
+  renderRosterClassesEditor();
+}
+
+function deleteClassCompletely(className){
+  if(!confirm(`⚠️ سيتم حذف شعبة "${className}" بكل طلابها نهائياً من قائمة الطلاب. هل أنت متأكد؟`)) return;
+  rosterOverridesMap[className] = [];
+  manualExtraClasses.delete(className);
+  saveOverrides();
+  persistManualClasses();
+  rebuildAppFromLoadedWorkbooks();
+  renderRosterClassesEditor();
+}
+
+function getAllClassNamesForEditor(){
+  const set = new Map();
+  (APP.loaded ? APP.classesRegistry : []).forEach(c => set.set(c.className, c));
+  manualExtraClasses.forEach(cn => { if(!set.has(cn)) set.set(cn, { className: cn, grade: gradeFromClassName(cn), section: sectionFromClassName(cn) }); });
+  return Array.from(set.values()).sort(sortClasses);
+}
+
+function renderRosterClassesEditor(){
+  const box = document.getElementById('rosterClassesEditor');
+  if(!box) return;
+  if(!APP.loaded){
+    box.innerHTML = '<div class="note-box">ارفع ملف الحضور أولاً لعرض قوائم الصفوف.</div>';
+    return;
+  }
+  const classes = getAllClassNamesForEditor();
+  box.innerHTML = classes.map(c => {
+    const students = Array.from(APP.roster.values())
+      .filter(s => s.className === c.className)
+      .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
+    const rows = students.map(s => `
+      <tr>
+        <td>${escapeHtml(s.studentName)}</td>
+        <td class="mono">${escapeHtml(s.studentId)}</td>
+        <td class="mono">${escapeHtml(s.phone||'-')}</td>
+        <td>
+          <button class="btn tiny" data-action="move" data-cn="${escapeHtml(c.className)}" data-id="${escapeHtml(s.studentId)}" data-name="${escapeHtml(s.studentName)}">➡️ نقل</button>
+          <button class="btn tiny danger" data-action="deleteStudent" data-cn="${escapeHtml(c.className)}" data-id="${escapeHtml(s.studentId)}">🗑️</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="4" class="hint">لا يوجد طلاب في هذه الشعبة</td></tr>';
+
+    return `
+    <details class="roster-class-block">
+      <summary>
+        <b>${escapeHtml(c.className)}</b> <span class="hint">(${fmt(students.length)} طالب)</span>
+        <span class="class-actions">
+          <button class="btn tiny" data-action="addStudent" data-cn="${escapeHtml(c.className)}">➕ طالب</button>
+          <button class="btn tiny" data-action="addBulk" data-cn="${escapeHtml(c.className)}">📋 إضافة جماعي</button>
+          <button class="btn tiny danger" data-action="deleteClass" data-cn="${escapeHtml(c.className)}">🗑️ حذف الشعبة</button>
+        </span>
+      </summary>
+      <div class="roster-class-body">
+        <div class="roster-add-form" id="addForm-${cssEsc(c.className)}" style="display:none;">
+          <div class="term-form-row">
+            <div class="filter-group"><span class="filter-label">اسم الطالب</span><input type="text" class="add-name-input"></div>
+            <div class="filter-group"><span class="filter-label">رقم الطالب</span><input type="text" class="add-id-input"></div>
+            <div class="filter-group"><span class="filter-label">رقم التواصل (اختياري)</span><input type="text" class="add-phone-input" placeholder="05xxxxxxxx"></div>
+            <button class="btn small primary" data-action="submitAddStudent" data-cn="${escapeHtml(c.className)}">إضافة</button>
+          </div>
+        </div>
+        <div class="roster-bulk-form" id="bulkForm-${cssEsc(c.className)}" style="display:none;">
+          <div class="note-box">سطر لكل طالب بصيغة: اسم الطالب (رقم الطالب) رقم التواصل — رقم التواصل اختياري وبأي صيغة شائعة (05xxxxxxxx، +971xxxxxxxxx، 00971xxxxxxxxx...) وسيُصحَّح تلقائياً.</div>
+          <textarea class="bulk-add-textarea" placeholder="أحمد محمد (12345) 0501234567" style="width:100%;height:110px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:8px;border:1px solid var(--line);"></textarea>
+          <div class="report-actions">
+            <button class="btn small primary" data-action="submitBulkAdd" data-cn="${escapeHtml(c.className)}">إضافة الكل</button>
+            <span class="bulk-add-result" style="font-size:11.5px;"></span>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>الاسم</th><th>الرقم</th><th>رقم التواصل</th><th>إجراءات</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </details>`;
+  }).join('') || '<div class="note-box">لا توجد شعب بعد.</div>';
+
+  // سلوك أكورديون: توسيع شعبة يطوي كل الشعب الأخرى تلقائياً (لا يسمح بتمديد أكثر من واحدة معاً)
+  const detailsEls = box.querySelectorAll('details.roster-class-block');
+  detailsEls.forEach(d => {
+    d.addEventListener('toggle', () => {
+      if(d.open) detailsEls.forEach(other => { if(other !== d) other.open = false; });
+    });
+  });
+}
+
+function cssEsc(s){ return (s||'').toString().replace(/[^a-zA-Z0-9]/g, '_'); }
+
+document.getElementById('btnAddNewClass').addEventListener('click', addNewClassPrompt);
+
+document.getElementById('rosterClassesEditor').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const cn = btn.dataset.cn;
+  if(action === 'deleteClass'){ deleteClassCompletely(cn); return; }
+  if(action === 'addStudent'){
+    const form = document.getElementById('addForm-' + cssEsc(cn));
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    return;
+  }
+  if(action === 'addBulk'){
+    const form = document.getElementById('bulkForm-' + cssEsc(cn));
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    return;
+  }
+  if(action === 'submitAddStudent'){
+    const form = document.getElementById('addForm-' + cssEsc(cn));
+    const name = form.querySelector('.add-name-input').value;
+    const id = form.querySelector('.add-id-input').value;
+    const phone = form.querySelector('.add-phone-input').value;
+    const res = addSingleStudent(cn, name, id, phone);
+    if(!res.ok){ alert(res.message); return; }
+    renderRosterClassesEditor();
+    return;
+  }
+  if(action === 'submitBulkAdd'){
+    const form = document.getElementById('bulkForm-' + cssEsc(cn));
+    const text = form.querySelector('.bulk-add-textarea').value;
+    const res = bulkAddStudents(cn, text);
+    if(!res.count){ form.querySelector('.bulk-add-result').textContent = '⚠️ لم يتم العثور على أسطر صالحة.'; return; }
+    renderRosterClassesEditor();
+    return;
+  }
+  if(action === 'deleteStudent'){
+    const id = btn.dataset.id;
+    if(!confirm('حذف هذا الطالب من الشعبة؟')) return;
+    deleteStudentFromClass(cn, id);
+    renderRosterClassesEditor();
+    return;
+  }
+  if(action === 'move'){
+    const id = btn.dataset.id;
+    const name = btn.dataset.name;
+    openTransferModal(cn, id, name);
+    return;
+  }
 });
 
 document.getElementById('btnSaveToExcelFile').addEventListener('click', async () => {
@@ -3781,6 +4261,7 @@ document.getElementById('btnSaveToExcelFile').addEventListener('click', async ()
   renderTermPanelFields();
   loadRosterSnapshots();
   loadOverrides();
+  loadManualClasses();
   if(loadPersisted() && APP.records && APP.records.length){
     initFiltersUI();
     rebuildTermFilterUI();
