@@ -124,6 +124,13 @@
   .school-data-grade-body{padding:14px 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
   .school-data-class-block{background:var(--bg);border:1px solid var(--line);padding:10px 12px;}
   .school-data-class-title{font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;margin-bottom:6px;}
+  .cr-matrix-table{table-layout:auto;}
+  .cr-matrix-table th, .cr-matrix-table td{padding:5px 4px;font-size:11px;text-align:center;white-space:nowrap;}
+  .cr-student-cell{position:sticky;right:0;background:var(--panel);text-align:start !important;font-weight:700;z-index:2;min-width:150px;}
+  .cr-cell{width:38px;}
+  .cr-full{background:var(--berry-soft);color:var(--berry);font-weight:800;}
+  .cr-partial{background:#FBF3D9;color:#8A6A1E;font-weight:800;}
+  .cr-present{background:transparent;}
   .roster-class-body{padding:0 14px 14px;}
   .roster-add-form, .roster-bulk-form{background:var(--bg);border:1px solid var(--line);padding:12px;margin-bottom:12px;}
   .btn.tiny.danger{background:var(--berry-soft);color:var(--berry);}
@@ -194,7 +201,6 @@
   table.data-table td{padding:7px 6px;border-bottom:1px solid var(--line);color:var(--ink);}
   table.data-table tr:last-child td{border-bottom:none;}
   .table-scroll{max-height:420px;overflow:auto;}
-  #panel-detail .table-scroll{max-height:65vh;}
   .pill{display:inline-block;padding:2px 9px;border-radius:0;font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap;}
   .clickable-name{cursor:pointer;color:var(--plum);font-weight:600;}
   .clickable-name:hover{text-decoration:underline;}
@@ -383,6 +389,8 @@
   body.printing-period-report #periodReportPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
   body.printing-student-report > *:not(#studentReportPrintArea){display:none !important;}
   body.printing-student-report #studentReportPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
+  body.printing-class-report > *:not(#classReportPrintArea){display:none !important;}
+  body.printing-class-report #classReportPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
   #studentReportPrintArea{page:auto;}
   body.printing-entry-report > *:not(#entryReportPrintArea){display:none !important;}
   body.printing-entry-report #entryReportPrintArea{display:block !important;padding:14px;font-family:'IBM Plex Sans Arabic',sans-serif;}
@@ -427,8 +435,9 @@
   .grade-rate-line{display:flex;align-items:center;gap:10px;padding:6px 0;}
   .grade-rate-line .grl-label{flex:0 0 70px;font-weight:700;font-size:12px;}
   .grade-rate-line .grl-bar-wrap{flex:1;height:10px;background:var(--line);}
-  .grade-rate-line .grl-bar{height:100%;}
+  .grade-rate-line .grl-bar{display:block;height:100%;}
   .grade-rate-line .grl-value{flex:0 0 42px;text-align:end;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;}
+  .grl-bar-nodata{font-size:9.5px;color:var(--ink-soft);padding-inline-start:6px;line-height:10px;display:block;}
   .grade-detail-boxes-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
   .grade-detail-box{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--plum);padding:12px 14px;}
   .grade-detail-box h4{margin:0 0 8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;}
@@ -484,9 +493,9 @@
     <div class="tabs-nav-inner">
       <button class="tab-btn active" data-tab="daily">🏠 التقرير اليومي</button>
       <button class="tab-btn" data-tab="entry">🗂️ تقرير الإدخال</button>
+      <button class="tab-btn" data-tab="classReports">📋 سجلات الغياب</button>
       <button class="tab-btn" data-tab="students">👥 الطلاب</button>
       <button class="tab-btn" data-tab="overview">📊 إحصائيات</button>
-      <button class="tab-btn" data-tab="detail">📋 السجل التفصيلي</button>
       <button class="tab-btn" data-tab="teachers">👨‍🏫 تقرير المعلمين</button>
       <button class="tab-btn" data-tab="schoolData">🏫 بيانات المدرسة</button>
     </div>
@@ -556,6 +565,11 @@
           <button class="btn small primary" id="btnPeriodReportPrint">🖨️ إصدار تقرير شامل للفترة المختارة</button>
         </div>
 
+        <div class="card">
+          <h3>مقارنة سريعة <span class="hint">هذا الأسبوع مقابل الأسبوع السابق ضمن الفلتر الحالي</span></h3>
+          <div id="statsWeekComparison"></div>
+        </div>
+
         <div class="row-2 balanced">
           <div class="card">
             <h3>معدل نسبة الحضور اليومي</h3>
@@ -585,10 +599,14 @@
               </table>
             </div>
           </div>
+          <div class="card">
+            <h3>طلاب في ازدياد الغياب <span class="hint">مقارنة النصف الأحدث بالنصف الأقدم من الفترة المختارة، للتدخل المبكر</span></h3>
+            <ul class="ranked-list" id="risingAbsenceList"></ul>
+          </div>
         </div>
 
         <div class="card">
-          <h3>الغياب اليومي الكامل خلال الفترة <span class="hint">عدد الطلاب الغائبين طوال اليوم، لكل يوم</span></h3>
+          <h3>الغياب اليومي الكامل خلال الفترة <span class="hint">عدد الطلاب الغائبين طوال اليوم، لكل يوم — مع خط متوسط 5 أيام لتوضيح الاتجاه الفعلي</span></h3>
           <div class="chart-period-note" id="noteChartByDate"></div>
           <div class="chart-holder"><canvas id="chartByDate"></canvas></div>
         </div>
@@ -600,6 +618,11 @@
         </div>
 
         <div class="card">
+          <h3>نسبة الحضور حسب يوم الأسبوع <span class="hint">هل يوم معيّن أعلى غياباً من غيره بشكل متكرر؟</span></h3>
+          <div class="chart-holder short"><canvas id="chartWeekdayAbsence"></canvas></div>
+        </div>
+
+        <div class="card">
           <h3>متوسط نسبة الحضور لكل شعبة <span class="hint">ملوّنة حسب المرحلة</span></h3>
           <div class="chart-period-note" id="noteChartClassAvg"></div>
           <div class="chart-holder"><canvas id="chartClassAvg"></canvas></div>
@@ -608,34 +631,6 @@
     </section>
 
     <!-- ===== السجل التفصيلي ===== -->
-    <section class="tab-panel" id="panel-detail">
-      <div class="wrap">
-        <div class="card">
-          <h3>السجل التفصيلي للغياب
-            <span class="report-actions" style="margin:0;">
-              <button class="btn small" id="btnExportCSV">⬇️ تصدير CSV</button>
-              <button class="btn small" id="btnPrintDetail">🖨️ طباعة</button>
-            </span>
-          </h3>
-          <div class="filter-group" style="max-width:320px;margin-bottom:12px;">
-            <label class="filter-label">🔍 بحث بالاسم أو الرقم</label>
-            <input type="text" id="fSearchDetail" placeholder="اكتب اسم الطالب أو رقمه">
-          </div>
-          <div class="table-scroll" id="detailTableScroll">
-            <table class="data-table" id="detailTable">
-              <thead>
-                <tr>
-                  <th>التاريخ</th><th>اليوم</th><th>الحصة</th><th>الصف الحالي</th>
-                  <th>الصف المسجَّل وقت الغياب</th><th>اسم الطالب</th><th>رقم الطالب</th><th>المعلم</th>
-                </tr>
-              </thead>
-              <tbody id="detailTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- ===== الطلاب ===== -->
     <section class="tab-panel" id="panel-students">
       <div class="wrap">
@@ -712,6 +707,38 @@
     </section>
 
     <!-- ===== بيانات المدرسة ===== -->
+    <section class="tab-panel" id="panel-classReports">
+      <div class="wrap">
+        <div class="card">
+          <h3>📋 سجلات الغياب</h3>
+          <div class="term-form-row">
+            <div class="filter-group">
+              <span class="filter-label">الشعبة</span>
+              <select id="classReportSelect"></select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">النطاق الزمني</span>
+              <select id="classReportRangeSelect">
+                <option value="all">كل السجل</option>
+                <option value="week">أسبوع محدد</option>
+              </select>
+            </div>
+            <div class="filter-group" id="classReportWeekGroup" style="display:none;">
+              <span class="filter-label">الأسبوع</span>
+              <select id="classReportWeekSelect"></select>
+            </div>
+            <button class="btn small primary" id="btnGenerateClassReport">عرض التقرير</button>
+          </div>
+          <div class="report-actions" id="classReportExportActions" style="display:none;">
+            <button class="btn small primary" id="btnClassReportPDF">🖨️ تصدير PDF</button>
+            <button class="btn small primary" id="btnClassReportExcel">⬇️ تصدير Excel</button>
+            <span class="hint" id="classReportPdfNote" style="display:none;">عدد الأيام كبير على صفحة PDF — التصدير متاح كملف Excel فقط</span>
+          </div>
+          <div id="classReportPreview"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="tab-panel" id="panel-schoolData">
       <div class="wrap">
         <div id="schoolDataDisplay"></div>
@@ -769,14 +796,19 @@
         <input type="tel" id="waPhoneInput" placeholder="مثال: 971501234567" style="width:100%;padding:8px 10px;border-radius:0;border:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">
         <label class="filter-label" style="display:block;margin:10px 0 4px;">نص الرسالة</label>
         <textarea id="waMessageText" rows="4" style="width:100%;font-family:inherit;font-size:12px;padding:8px 10px;border-radius:0;border:1px solid var(--line);resize:vertical;"></textarea>
-        <div style="display:flex;justify-content:center;margin:14px 0 6px;"><div id="waQrCode"></div></div>
-        <div class="note-box" style="text-align:center;">📱 امسح الرمز بجوالك لفتح واتساب مباشرة، أو استخدم زر الإرسال المباشر أدناه (يعمل على الأجهزة المرتبطة بواتساب ويب).</div>
+        <div style="display:flex;justify-content:center;margin:14px 0 6px;"><div id="waQrCode" style="cursor:zoom-in;" title="اضغط لتكبير الرمز"></div></div>
+        <div class="note-box" style="text-align:center;">📱 امسح الرمز بجوالك لفتح واتساب مباشرة (اضغط عليه لتكبيره إن كان صغيرًا)، أو استخدم زر الإرسال المباشر أدناه (يعمل على الأجهزة المرتبطة بواتساب ويب).</div>
       </div>
       <div class="modal-foot">
         <a class="btn primary whatsapp disabled" id="waDirectLink" target="_blank" rel="noopener">📩 إرسال مباشر</a>
         <button class="btn small" id="btnCloseWaModal">إغلاق</button>
       </div>
     </div>
+  </div>
+
+  <!-- ===== نافذة تكبير رمز QR لملء الشاشة ===== -->
+  <div class="modal-overlay" id="waQrFullscreenModal" style="background:rgba(16,32,63,.95);cursor:zoom-out;">
+    <div id="waQrFullscreenContent" style="background:#fff;padding:24px;display:flex;align-items:center;justify-content:center;"></div>
   </div>
 
   <!-- ===== منطقة التقرير اليومي الرسمي (للطباعة فقط) ===== -->
@@ -787,6 +819,7 @@
 
   <!-- ===== منطقة تقرير الطالب الرسمي (للطباعة فقط - A4 عمودي) ===== -->
   <div id="studentReportPrintArea"></div>
+  <div id="classReportPrintArea"></div>
 
   <!-- ===== منطقة التقرير الشامل للفترة (للطباعة فقط - A4 عمودي) ===== -->
   <div id="periodReportPrintArea"></div>
@@ -968,6 +1001,12 @@ function dailyAbsenceInquiryMessage(schoolName, studentName, className, date, we
   weekLabel = weekLabel || '';
   const ref = childRefPhrase(genderType);
   return `السلام عليكم، نلاحظ غياب ${ref} ${studentName} (شعبة ${className}) اليوم ${weekdayName(date)} الموافق ${fmtDate(date)}${weekLabel}. نأمل التكرم بإفادتنا بسبب الغياب، وإرسال العذر الطبي أو الرسمي إن وجد. مع خالص الشكر - ${schoolName}`;
+}
+
+function multiDayInquiryMessage(schoolName, studentName, className, dates, genderType){
+  const ref = childRefPhrase(genderType);
+  const datesText = dates.map(d => weekdayName(toDateFromKey(d)) + ' ' + d).join('، ');
+  return `السلام عليكم، نلاحظ غياب ${ref} ${studentName} (شعبة ${className}) في الأيام التالية: ${datesText}. نأمل التكرم بإفادتنا بسبب الغياب في هذه الأيام، وإرسال العذر الطبي أو الرسمي إن وجد. مع خالص الشكر - ${schoolName}`;
 }
 
 /* ===================== قراءة الأوراق ===================== */
@@ -1225,9 +1264,14 @@ function buildAppData(absRows, rosterRows){
     } else {
       date = toUAELocalDate(toDateSafe(row[col.start]));
     }
+    if(date && isWeekendDateStr(fmtDate(date))) continue; // تاريخ يقع في عطلة نهاية الأسبوع (سبت/أحد) - يُتجاهل تماماً كأنه غير موجود (تسجيل خاطئ)
+
+    const emailValPre = col.email != null ? (row[col.email]||'').toString().trim() : '';
+    const emailLocalPart = emailValPre.split('@')[0].toLowerCase();
+    if(emailLocalPart.startsWith('stum') || emailLocalPart.startsWith('stuf')) continue; // رد مُدخَل عبر إيميل طالب (وليس معلم) - يُتجاهل تماماً بالكامل
 
     processedRows++;
-    const emailVal = col.email != null ? (row[col.email]||'').toString().trim() : '';
+    const emailVal = emailValPre;
     const emailTeacherName = deriveTeacherNameFromEmail(emailVal);
     const fallbackTeacherName = col.teacher != null ? (row[col.teacher]||'').toString().trim() : '';
     const teacherName = emailTeacherName || fallbackTeacherName;
@@ -1398,6 +1442,13 @@ function isSchoolDay(jsDay){
 function isWeekendDateStr(dateStr){
   const d = new Date(dateStr + 'T00:00:00');
   return !isSchoolDay(d.getDay());
+}
+
+/* أحدث يوم دوام فعلي (يتجاوز أيام السبت/الأحد) ضمن التواريخ المتوفرة حالياً */
+function latestSchoolDay(){
+  const schoolDays = APP.availableDates.filter(d => !isWeekendDateStr(d));
+  if(schoolDays.length) return schoolDays[schoolDays.length-1];
+  return APP.availableDates.length ? APP.availableDates[APP.availableDates.length-1] : null;
 }
 
 function buildSubmissionCells(allSubmissions){
@@ -1653,7 +1704,8 @@ function rebuildAppFromLoadedWorkbooks(){
 
   const built = buildAppData(absRows, rosterRows);
   APP = Object.assign({ loaded: true, fileName: lastAttendanceFileName }, built);
-  entryReportDate = APP.availableDates.length ? APP.availableDates[APP.availableDates.length-1] : null;
+  // نُبقي على التاريخ المختار حالياً إن كان لا يزال صالحاً (لا نُعيد ضبط الفلتر عند كل تحديث/ربط تلقائي)
+  if(!entryReportDate || !APP.availableDates.includes(entryReportDate)) entryReportDate = latestSchoolDay();
 
   const termSheet = findSheet(wb, ['بيانات المدرسة'], ['بيانات المدرسة']);
   if(termSheet){
@@ -1751,7 +1803,7 @@ function loadPersisted(){
       submissionCells: deserializeSubmissionCells(d.submissionCells),
       availableDates: d.availableDates || []
     };
-    entryReportDate = APP.availableDates.length ? APP.availableDates[APP.availableDates.length-1] : null;
+    entryReportDate = (entryReportDate && APP.availableDates.includes(entryReportDate)) ? entryReportDate : latestSchoolDay();
     return true;
   }catch(e){ return false; }
 }
@@ -1775,7 +1827,6 @@ function updateLinkedFilesStatus(){
 const fDateFrom = document.getElementById('fDateFrom');
 const fDateTo = document.getElementById('fDateTo');
 const fClassChips = document.getElementById('fClassChips');
-const fSearchDetail = document.getElementById('fSearchDetail');
 const fSearchStudents = document.getElementById('fSearchStudents');
 const resultCount = document.getElementById('resultCount');
 const btnResetFilters = document.getElementById('btnResetFilters');
@@ -1811,18 +1862,15 @@ function wireSearchInput(el){
     const val = el.value;
     searchDebounce = setTimeout(() => {
       filters.search = val;
-      if(fSearchDetail !== el) fSearchDetail.value = val;
-      if(fSearchStudents !== el) fSearchStudents.value = val;
       renderAll();
     }, 250);
   });
 }
-wireSearchInput(fSearchDetail);
 wireSearchInput(fSearchStudents);
 
 btnResetFilters.addEventListener('click', () => {
   filters = { dateFrom: null, dateTo: null, classNames: new Set(), search: '' };
-  fDateFrom.value = ''; fDateTo.value = ''; fSearchDetail.value = ''; fSearchStudents.value = '';
+  fDateFrom.value = ''; fDateTo.value = ''; fSearchStudents.value = '';
   const selTW = document.getElementById('selTermWeek');
   if(selTW) selTW.value = 'all';
   document.getElementById('termDayChipsWrap').style.display = 'none';
@@ -1855,7 +1903,7 @@ document.getElementById('btnEntryPrev').addEventListener('click', () => shiftEnt
 document.getElementById('btnEntryNext').addEventListener('click', () => shiftEntryDate(1));
 document.getElementById('btnEntryLatest').addEventListener('click', () => {
   if(!APP.availableDates.length) return;
-  entryReportDate = APP.availableDates[APP.availableDates.length-1];
+  entryReportDate = latestSchoolDay();
   syncEntryDateInput();
   renderEntryReport();
 });
@@ -1872,12 +1920,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-    const noFilterTabs = ['daily', 'entry', 'teachers', 'schoolData'];
+    const noFilterTabs = ['daily', 'entry', 'teachers', 'schoolData', 'classReports'];
     filtersCard.style.display = noFilterTabs.includes(btn.dataset.tab) ? 'none' : (APP.loaded ? 'block' : 'none');
     if(btn.dataset.tab === 'entry'){ entryReportDate = dailyPageDate || entryReportDate; syncEntryDateInput(); renderEntryReport(); }
     if(btn.dataset.tab === 'teachers') renderTeachersReport();
     if(btn.dataset.tab === 'daily'){ dailyPageDate = entryReportDate || dailyPageDate; syncDailyDateInput(); renderDailyPage(); }
     if(btn.dataset.tab === 'schoolData') renderSchoolDataDisplay();
+    if(btn.dataset.tab === 'classReports') initClassReportsTab();
   });
 });
 
@@ -1909,7 +1958,6 @@ function renderAll(){
   resultCount.textContent = `غياب يوم كامل: ${fmt(filteredDaily.length)} — سجلات جزئية (حصص): ${fmt(filteredRecords.length)}`;
   renderOverview(filteredDaily, filteredRecords);
   renderStatsRankings(filteredDaily, filteredRecords);
-  renderDetail(filteredRecords);
   renderStudents(filteredDaily, filteredRecords);
   renderEntryReport();
   renderDailyPage();
@@ -1928,16 +1976,43 @@ function computeWeeklyFullDay(filteredDaily){
   return Array.from(map.entries()).sort((a,b) => a[0].localeCompare(b[0]));
 }
 
-function computeClassAverageAttendance(filteredRecords){
-  const byDateClass = new Map();
-  filteredRecords.forEach(r => {
-    if(!r.date) return;
-    const dk = fmtDate(r.date);
-    if(filters.dateFrom && dk < filters.dateFrom) return;
-    if(filters.dateTo && dk > filters.dateTo) return;
-    const key = dk + SEP + r.currentClass;
-    if(!byDateClass.has(key)) byDateClass.set(key, new Set());
-    byDateClass.get(key).add(r.studentId || ('name:' + r.studentName));
+/* نسبة الحضور اليومي العامة لمجموعة شعب معيّنة: لكل يوم نحسب نسبة واحدة تجمع كل الشعب المطلوبة معاً (غياب يوم كامل فقط،
+   بنفس تعريف صفحة التقرير اليومي)، ثم نُتوسط هذه النسب اليومية عبر عدد الأيام - مطابق تماماً لما طلبه المستخدم */
+function computeDailyAverageForClasses(filteredDaily, classNames){
+  const classSet = new Set(classNames);
+  const absentByDate = new Map();
+  filteredDaily.forEach(d => {
+    if(!classSet.has(d.currentClass)) return;
+    if(!absentByDate.has(d.date)) absentByDate.set(d.date, new Set());
+    absentByDate.get(d.date).add(d.studentKey);
+  });
+
+  const days = APP.availableDates.filter(dk => (!filters.dateFrom || dk >= filters.dateFrom) && (!filters.dateTo || dk <= filters.dateTo));
+  let sum = 0, count = 0;
+  days.forEach(dk => {
+    const cells = APP.submissionCells.get(dk);
+    let total = 0;
+    classNames.forEach(cn => {
+      if(cells && cells.has(cn)){
+        const c = APP.classesRegistry.find(x => x.className === cn);
+        if(c) total += (c.total || 0);
+      }
+    });
+    if(!total) return;
+    const absentSet = absentByDate.get(dk);
+    const absentCount = absentSet ? absentSet.size : 0;
+    const rate = Math.max(0, Math.min(100, ((total - absentCount) / total) * 100));
+    sum += rate; count++;
+  });
+  return count ? Math.round(sum / count) : null;
+}
+
+function computeClassAverageAttendance(filteredDaily){
+  const absentByDateClass = new Map();
+  filteredDaily.forEach(d => {
+    const key = d.date + SEP + d.currentClass;
+    if(!absentByDateClass.has(key)) absentByDateClass.set(key, new Set());
+    absentByDateClass.get(key).add(d.studentKey);
   });
 
   return APP.classesRegistry.map(c => {
@@ -1949,7 +2024,7 @@ function computeClassAverageAttendance(filteredRecords){
       if(!cells || !cells.has(c.className)) return;
       const total = c.total || 0;
       if(!total) return;
-      const absentSet = byDateClass.get(dk + SEP + c.className);
+      const absentSet = absentByDateClass.get(dk + SEP + c.className);
       const absentCount = absentSet ? absentSet.size : 0;
       const rate = Math.max(0, Math.min(100, ((total - absentCount) / total) * 100));
       rateSum += rate; daysCount++;
@@ -1958,33 +2033,22 @@ function computeClassAverageAttendance(filteredRecords){
   }).filter(c => c.avgRate != null).sort(sortClasses);
 }
 
-function computeGradeAndOverallAttendance(classAvgList){
-  let totalWeighted = 0, totalWeight = 0;
-  const byGradeAgg = new Map();
-  classAvgList.forEach(c => {
-    totalWeighted += c.avgRate * c.daysCount;
-    totalWeight += c.daysCount;
-    if(!byGradeAgg.has(c.grade)) byGradeAgg.set(c.grade, { weighted: 0, weight: 0 });
-    const g = byGradeAgg.get(c.grade);
-    g.weighted += c.avgRate * c.daysCount;
-    g.weight += c.daysCount;
-  });
-  const overallRate = totalWeight ? Math.round(totalWeighted / totalWeight) : null;
-  const byGrade = Array.from(byGradeAgg.entries())
-    .map(([grade, g]) => ({ grade, rate: g.weight ? Math.round(g.weighted / g.weight) : null }))
-    .sort((a,b) => gradeOrderIndex(a.grade) - gradeOrderIndex(b.grade));
-  return { overallRate, byGrade };
-}
-
-function renderStatsKpiBoxes(classAvg){
-  const { overallRate, byGrade } = computeGradeAndOverallAttendance(classAvg);
+function renderStatsKpiBoxes(filteredDaily, classAvg){
+  const allClassNames = APP.classesRegistry.map(c => c.className);
+  const overallRate = computeDailyAverageForClasses(filteredDaily, allClassNames);
 
   document.getElementById('statsOverallRateBox').innerHTML = `<div class="overall-rate-display">${overallRate != null ? overallRate + '%' : '—'}</div>`;
+
+  const grades = Array.from(new Set(APP.classesRegistry.map(c => c.grade))).sort((a,b) => gradeOrderIndex(a) - gradeOrderIndex(b));
+  const byGrade = grades.map(g => ({
+    grade: g,
+    rate: computeDailyAverageForClasses(filteredDaily, APP.classesRegistry.filter(c => c.grade === g).map(c => c.className))
+  }));
 
   document.getElementById('statsGradeRateLines').innerHTML = byGrade.map(g => `
     <div class="grade-rate-line">
       <span class="grl-label" style="color:${gradeAccent(g.grade)};">${escapeHtml(g.grade)}</span>
-      <span class="grl-bar-wrap"><span class="grl-bar" style="width:${g.rate||0}%;background:${gradeAccent(g.grade)};"></span></span>
+      <span class="grl-bar-wrap">${g.rate != null ? `<span class="grl-bar" style="width:${g.rate}%;background:${gradeAccent(g.grade)};"></span>` : '<span class="grl-bar-nodata">لا توجد بيانات ضمن الفترة المختارة</span>'}</span>
       <span class="grl-value">${g.rate != null ? g.rate + '%' : '—'}</span>
     </div>`).join('');
 
@@ -2005,15 +2069,127 @@ function renderOverview(filteredDaily, filteredRecords){
   document.getElementById('noteChartClassAvg').textContent = periodNoteText();
 
   const byDate = aggregateDailyByDate(filteredDaily);
-  drawLineChart('chartByDate', byDate.map(x=>x[0]), byDate.map(x=>x[1]));
+  const dailyValues = byDate.map(x=>x[1]);
+  const movingAvg = computeMovingAverage(dailyValues, 5);
+  drawLineChart('chartByDate', byDate.map(x=>x[0]), dailyValues, { label: 'متوسط 5 أيام دراسية', data: movingAvg, color: '#C9A227' });
 
   const byWeek = computeWeeklyFullDay(filteredDaily);
-  drawBarChart('chartByWeek', byWeek.map(x => fmtDateShortAr(toDateFromKey(x[0]))), byWeek.map(x=>x[1]), '#10203F');
+  drawLineChart('chartByWeek', byWeek.map(x => fmtDateShortAr(toDateFromKey(x[0]))), byWeek.map(x=>x[1]));
 
-  const classAvg = computeClassAverageAttendance(filteredRecords);
+  const classAvg = computeClassAverageAttendance(filteredDaily);
   drawBarChart('chartClassAvg', classAvg.map(c=>c.className), classAvg.map(c=>c.avgRate), classAvg.map(c=>gradeAccent(c.grade)), true);
 
-  renderStatsKpiBoxes(classAvg);
+  renderStatsKpiBoxes(filteredDaily, classAvg);
+  renderWeekComparisonIndicator(filteredDaily);
+  renderWeekdayAbsenceChart(filteredRecords);
+  renderRisingAbsenceStudents(filteredDaily);
+}
+
+/* ---------- مؤشر مقارنة سريع: هذا الأسبوع مقابل الأسبوع السابق ---------- */
+function renderWeekComparisonIndicator(filteredDaily){
+  const box = document.getElementById('statsWeekComparison');
+  if(!box) return;
+  const byWeek = computeWeeklyFullDay(filteredDaily);
+  if(byWeek.length < 2){ box.innerHTML = '<div class="hint" style="padding:20px 0;text-align:center;">لا توجد بيانات كافية للمقارنة (يلزم أسبوعان على الأقل ضمن الفلتر الحالي).</div>'; return; }
+  const thisWeek = byWeek[byWeek.length-1][1];
+  const lastWeek = byWeek[byWeek.length-2][1];
+  const diff = thisWeek - lastWeek;
+  const flat = diff === 0;
+  const up = diff > 0;
+  const pct = lastWeek ? Math.round((Math.abs(diff)/lastWeek)*100) : (thisWeek>0 ? 100 : 0);
+  const icon = flat ? '➖' : (up ? '▲' : '▼');
+  // ارتفاع عدد أيام الغياب = مؤشر سيء (أحمر)، انخفاضه = مؤشر جيد (أخضر)
+  const color = flat ? 'var(--ink-soft)' : (up ? 'var(--berry)' : 'var(--forest)');
+  box.innerHTML = `<div style="text-align:center;padding:6px 0;">
+    <div style="font-family:'Cairo',sans-serif;font-size:28px;font-weight:800;color:${color};">${icon} ${fmt(pct)}%</div>
+    <div class="hint">${flat ? 'الغياب مستقر مقارنة بالأسبوع السابق' : (up ? 'ارتفع الغياب مقارنة بالأسبوع السابق' : 'انخفض الغياب مقارنة بالأسبوع السابق')}</div>
+    <div class="hint" style="margin-top:4px;">${fmt(lastWeek)} ← ${fmt(thisWeek)} حالة غياب يوم كامل</div>
+  </div>`;
+}
+
+/* ---------- نسبة الحضور حسب يوم الأسبوع ---------- */
+function computeAbsenceRateByWeekday(filteredRecords){
+  const byDateClass = new Map();
+  filteredRecords.forEach(r => {
+    if(!r.date) return;
+    const dk = fmtDate(r.date);
+    if(filters.dateFrom && dk < filters.dateFrom) return;
+    if(filters.dateTo && dk > filters.dateTo) return;
+    const key = dk + SEP + r.currentClass;
+    if(!byDateClass.has(key)) byDateClass.set(key, new Set());
+    byDateClass.get(key).add(r.studentId || ('name:' + r.studentName));
+  });
+
+  const byWeekday = {};
+  APP.classesRegistry.forEach(c => {
+    APP.availableDates.forEach(dk => {
+      if(filters.dateFrom && dk < filters.dateFrom) return;
+      if(filters.dateTo && dk > filters.dateTo) return;
+      const cells = APP.submissionCells.get(dk);
+      if(!cells || !cells.has(c.className)) return;
+      const total = c.total || 0;
+      if(!total) return;
+      const absentSet = byDateClass.get(dk + SEP + c.className);
+      const absentCount = absentSet ? absentSet.size : 0;
+      const rate = Math.max(0, Math.min(100, ((total - absentCount) / total) * 100));
+      const weekday = new Date(dk + 'T00:00:00').getDay();
+      if(!byWeekday[weekday]) byWeekday[weekday] = { sum: 0, count: 0 };
+      byWeekday[weekday].sum += rate;
+      byWeekday[weekday].count++;
+    });
+  });
+
+  const dayNames = { 1: 'الاثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة' };
+  return [1,2,3,4,5].map(d => ({
+    day: dayNames[d],
+    rate: (byWeekday[d] && byWeekday[d].count) ? Math.round(byWeekday[d].sum / byWeekday[d].count) : null
+  })).filter(x => x.rate != null);
+}
+
+function renderWeekdayAbsenceChart(filteredRecords){
+  const el = document.getElementById('chartWeekdayAbsence');
+  if(!el) return;
+  const data = computeAbsenceRateByWeekday(filteredRecords);
+  drawBarChart('chartWeekdayAbsence', data.map(x=>x.day), data.map(x=>x.rate), '#7A2E3D', true);
+}
+
+/* ---------- طلاب في ازدياد الغياب (وليس الأكثر غياباً إجمالاً) ---------- */
+function computeRisingAbsenceStudents(filteredDaily){
+  const dates = Array.from(new Set(filteredDaily.map(d => d.date))).sort();
+  if(dates.length < 4) return [];
+  const mid = Math.floor(dates.length / 2);
+  const earlierDates = new Set(dates.slice(0, mid));
+  const laterDates = new Set(dates.slice(mid));
+
+  const byStudent = new Map();
+  filteredDaily.forEach(d => {
+    const key = d.studentKey;
+    if(!byStudent.has(key)) byStudent.set(key, { studentName: d.studentName, className: d.currentClass, earlier: 0, later: 0 });
+    const info = byStudent.get(key);
+    if(earlierDates.has(d.date)) info.earlier++;
+    else if(laterDates.has(d.date)) info.later++;
+  });
+
+  const earlierDayCount = earlierDates.size, laterDayCount = laterDates.size;
+  return Array.from(byStudent.values()).map(info => {
+    const earlierRate = earlierDayCount ? info.earlier / earlierDayCount : 0;
+    const laterRate = laterDayCount ? info.later / laterDayCount : 0;
+    return { ...info, increase: laterRate - earlierRate };
+  }).filter(r => r.increase > 0 && r.later >= 2)
+    .sort((a,b) => b.increase - a.increase)
+    .slice(0, 10);
+}
+
+function renderRisingAbsenceStudents(filteredDaily){
+  const box = document.getElementById('risingAbsenceList');
+  if(!box) return;
+  const results = computeRisingAbsenceStudents(filteredDaily);
+  if(!results.length){ box.innerHTML = emptyState('لا يوجد طلاب في ازدياد ملحوظ للغياب ضمن الفترة الحالية (أو الفترة قصيرة جداً للمقارنة).'); return; }
+  box.innerHTML = results.map(r => `
+    <li>
+      <span class="rank-name">${escapeHtml(r.studentName)} <span style="color:var(--ink-soft);font-size:10.5px;">(${escapeHtml(r.className)})</span></span>
+      <span class="rank-count" style="color:var(--berry);">▲ ${Math.round(r.increase*100)}%</span>
+    </li>`).join('');
 }
 
 /* ---------- الرسوم البيانية ---------- */
@@ -2046,13 +2222,26 @@ if(typeof Chart !== 'undefined'){
 
 function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
 
-function drawLineChart(id, labels, data){
+function computeMovingAverage(values, windowSize){
+  return values.map((_, i) => {
+    const start = Math.max(0, i - windowSize + 1);
+    const slice = values.slice(start, i + 1);
+    const sum = slice.reduce((s,v) => s + v, 0);
+    return Math.round((sum / slice.length) * 10) / 10;
+  });
+}
+
+function drawLineChart(id, labels, data, extraLine){
   destroyChart(id);
   const ctx = document.getElementById(id).getContext('2d');
+  const datasets = [{ label: 'غياب يوم كامل', data, borderColor: '#10203F', backgroundColor: 'rgba(16,32,63,.10)', fill: true, tension: .3, pointRadius: 3 }];
+  if(extraLine){
+    datasets.push({ label: extraLine.label, data: extraLine.data, borderColor: extraLine.color || '#C9A227', backgroundColor: 'transparent', fill: false, tension: .35, pointRadius: 0, borderWidth: 2, borderDash: [6,3] });
+  }
   charts[id] = new Chart(ctx, {
     type: 'line',
-    data: { labels, datasets: [{ label: 'غياب يوم كامل', data, borderColor: '#10203F', backgroundColor: 'rgba(16,32,63,.10)', fill: true, tension: .3, pointRadius: 3 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    data: { labels, datasets },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: !!extraLine, labels: { font: { family: "'IBM Plex Sans Arabic'" } } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
   });
 }
 
@@ -2091,37 +2280,6 @@ function drawDoughnutChart(id, labels, data, colors){
 function emptyState(msg){ return `<div class="empty-state"><div class="icon">📭</div><div>${escapeHtml(msg)}</div></div>`; }
 
 /* ---------- السجل التفصيلي (مستوى الحصة) ---------- */
-function renderDetail(filteredRecords){
-  const tbody = document.getElementById('detailTableBody');
-  const sorted = [...filteredRecords].sort((a,b) => (b.date||0) - (a.date||0));
-  if(!sorted.length){ tbody.innerHTML = `<tr><td colspan="8">${emptyState('لا توجد سجلات مطابقة للفلاتر الحالية.')}</td></tr>`; return; }
-  tbody.innerHTML = sorted.map(r => `
-    <tr class="clickable-row" data-key="${escapeHtml(r.studentId || ('name:'+r.studentName))}">
-      <td>${fmtDate(r.date)}</td>
-      <td>${weekdayName(r.date)}</td>
-      <td>${escapeHtml(r.period)}</td>
-      <td>${escapeHtml(r.currentClass)}</td>
-      <td>${escapeHtml(r.recordedClass)}${r.recordedClass!==r.currentClass?' <span class="badge-noroster">تغيّرت الشعبة</span>':''}</td>
-      <td class="clickable-name">${escapeHtml(r.studentName)}</td>
-      <td>${escapeHtml(r.studentId) || '—'}</td>
-      <td>${escapeHtml(r.teacherName)}</td>
-    </tr>`).join('');
-  tbody.querySelectorAll('tr.clickable-row').forEach(tr => tr.addEventListener('click', () => openStudentModal(tr.dataset.key)));
-}
-
-document.getElementById('btnExportCSV').addEventListener('click', () => {
-  const filtered = getFilteredRecords();
-  const header = ['التاريخ','اليوم','الحصة','الصف الحالي','الصف وقت الغياب','اسم الطالب','رقم الطالب','المعلم'];
-  const rows = filtered.map(r => [fmtDate(r.date), weekdayName(r.date), r.period, r.currentClass, r.recordedClass, r.studentName, r.studentId, r.teacherName]);
-  const csv = '\uFEFF' + [header, ...rows].map(row => row.map(v => `"${(v==null?'':v.toString()).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'تقرير_الغياب_' + fmtDate(new Date()) + '.csv';
-  a.click();
-});
-document.getElementById('btnPrintDetail').addEventListener('click', () => window.print());
-
 /* ---------- الطلاب (غياب يوم كامل) ---------- */
 function renderStudents(filteredDaily, filteredRecords){
   const dailyByStudent = new Map();
@@ -2321,7 +2479,8 @@ function openEntryCellModal(date, className, period){
   if(!records.length){
     body.innerHTML = `<div class="dcb-none" style="padding:14px 0;">لا يوجد غياب مسجَّل في هذه الحصة (حضور كامل).</div>`;
   } else {
-    body.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--ink-soft);">المعلم: ${escapeHtml(records[0].teacherName || '—')}</div>
+    const entryTime = fmtTime24(records[0].date); // وقت إكمال الاستبانة الفعلي بتوقيت الإمارات (بعد التصحيح من غرينتش)
+    body.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--ink-soft);">المعلم: ${escapeHtml(records[0].teacherName || '—')} — وقت إدخال الغياب: ${escapeHtml(entryTime)} (بتوقيت الإمارات)</div>
       <ul class="dcb-name-list">${records.map(r => `<li>${escapeHtml(r.studentName)}${r.studentId? ' <span class="dcb-id">('+escapeHtml(r.studentId)+')</span>' : ''}</li>`).join('')}</ul>`;
   }
   document.getElementById('entryCellModal').style.display = 'flex';
@@ -2455,9 +2614,16 @@ function openStudentModal(key){
     <div class="comm-actions">
       <button class="btn small whatsapp" id="smWaTotal">📩 استفسار عن مجمل الغياب (${fmt(dailyHist.length)} يوم)</button>
       <button class="btn small whatsapp" id="smWaDaily">📩 استفسار غياب اليوم</button>
+      <button class="btn small whatsapp" id="smWaMultiDay">📩 استفسار عن أيام محددة (اختر ✓ من الجدول أدناه)</button>
     </div></div>`;
 
-  const dailyRows = dailyHist.slice().reverse().map(d => `<tr><td>${escapeHtml(weekdayName(toDateFromKey(d.date)))}</td><td>${escapeHtml(d.date)}</td><td>${d.periodsAbsent.length}</td></tr>`).join('');
+  const dailyRows = dailyHist.slice().reverse().map(d => `<tr>
+      <td><input type="checkbox" class="sm-day-check" value="${escapeHtml(d.date)}"></td>
+      <td>${escapeHtml(weekdayName(toDateFromKey(d.date)))}</td>
+      <td>${escapeHtml(d.date)}</td>
+      <td>${d.periodsAbsent.length}</td>
+      <td><button class="btn tiny whatsapp" data-single-day-wa="${escapeHtml(d.date)}" title="استفسار عن غياب هذا اليوم">📩</button></td>
+    </tr>`).join('');
   const periodRows = periodHist.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${weekdayName(r.date)}</td><td>${escapeHtml(r.period)}</td><td>${escapeHtml(r.recordedClass)}</td><td>${escapeHtml(r.teacherName)}</td></tr>`).join('');
 
   document.getElementById('studentModalBody').innerHTML = `
@@ -2470,8 +2636,8 @@ function openStudentModal(key){
     <div class="note-box">${rosterBadge} — يبقى سجل غياب الطالب مرتبطاً برقمه حتى لو تم نقله إلى شعبة أخرى.</div>
     ${comm}
     <h4 style="font-family:'Cairo',sans-serif;font-size:12.5px;color:var(--plum);margin:14px 0 6px;">أيام الغياب الكامل</h4>
-    <div class="table-scroll" style="max-height:150px;">
-      <table class="data-table"><thead><tr><th>اليوم</th><th>التاريخ</th><th>عدد الحصص الغائب بها</th></tr></thead><tbody>${dailyRows || '<tr><td colspan="3">لا يوجد</td></tr>'}</tbody></table>
+    <div class="table-scroll" style="max-height:170px;">
+      <table class="data-table"><thead><tr><th></th><th>اليوم</th><th>التاريخ</th><th>عدد الحصص الغائب بها</th><th></th></tr></thead><tbody>${dailyRows || '<tr><td colspan="5">لا يوجد</td></tr>'}</tbody></table>
     </div>
     <h4 style="font-family:'Cairo',sans-serif;font-size:12.5px;color:var(--plum);margin:14px 0 6px;">كل سجلات الغياب على مستوى الحصة</h4>
     <div class="table-scroll" style="max-height:200px;">
@@ -2480,6 +2646,21 @@ function openStudentModal(key){
   `;
   document.getElementById('smWaTotal').addEventListener('click', () => openWhatsAppModal(studentName, currentClass, phone, totalMsg));
   document.getElementById('smWaDaily').addEventListener('click', () => openWhatsAppModal(studentName, currentClass, phone, dailyMsg));
+  document.getElementById('smWaMultiDay').addEventListener('click', () => {
+    const checked = Array.from(document.querySelectorAll('.sm-day-check:checked')).map(cb => cb.value).sort();
+    if(!checked.length){ alert('اختر يومًا واحدًا على الأقل من الجدول أدناه (علامة ✓).'); return; }
+    const msg = multiDayInquiryMessage(SCHOOL_NAME, studentName, currentClass, checked, STUDENT_GENDER_TYPE);
+    openWhatsAppModal(studentName, currentClass, phone, msg);
+  });
+  document.querySelectorAll('[data-single-day-wa]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const d = btn.dataset.singleDayWa;
+      const wn = weekNumberForDate(d);
+      const wl = wn ? ` (الأسبوع ${wn})` : '';
+      const msg = dailyAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, toDateFromKey(d), wl, STUDENT_GENDER_TYPE);
+      openWhatsAppModal(studentName, currentClass, phone, msg);
+    });
+  });
   studentModal.style.display = 'flex';
 }
 
@@ -2550,9 +2731,12 @@ function buildPeriodReportPrintHTML(){
   const topStudents = aggregateDailyByStudent(filteredDaily).slice(0, 15);
   const topRows = topStudents.map(s => `<tr><td>${escapeHtml(s.studentName)}</td><td>${escapeHtml(s.className)}</td><td>${fmt(s.count)}</td></tr>`).join('');
 
-  const classAvg = computeClassAverageAttendance(filteredRecords);
+  const classAvg = computeClassAverageAttendance(filteredDaily);
   const classAvgRows = classAvg.map(c => `<tr><td>${escapeHtml(c.className)}</td><td>${c.avgRate}%</td></tr>`).join('');
-  const { overallRate, byGrade } = computeGradeAndOverallAttendance(classAvg);
+  const allClassNames = APP.classesRegistry.map(c => c.className);
+  const overallRate = computeDailyAverageForClasses(filteredDaily, allClassNames);
+  const gradesForReport = Array.from(new Set(APP.classesRegistry.map(c => c.grade))).sort((a,b) => gradeOrderIndex(a) - gradeOrderIndex(b));
+  const byGrade = gradesForReport.map(g => ({ grade: g, rate: computeDailyAverageForClasses(filteredDaily, APP.classesRegistry.filter(c => c.grade === g).map(c => c.className)) }));
   const gradeRateRows = byGrade.map(g => `<tr><td style="color:${gradeAccent(g.grade)};font-weight:800;">${escapeHtml(g.grade)}</td><td>${g.rate != null ? g.rate+'%' : '—'}</td></tr>`).join('');
 
   return `
@@ -2628,6 +2812,22 @@ waPhoneInput.addEventListener('input', updateWaQr);
 waMessageText.addEventListener('input', updateWaQr);
 document.getElementById('btnCloseWaModal').addEventListener('click', () => waModal.style.display = 'none');
 waModal.addEventListener('click', e => { if(e.target === waModal) waModal.style.display = 'none'; });
+
+/* ---------- تكبير رمز QR ليملأ الشاشة (يظهر بوضوح أكثر عند التصوير) ---------- */
+const waQrFullscreenModal = document.getElementById('waQrFullscreenModal');
+const waQrFullscreenContent = document.getElementById('waQrFullscreenContent');
+waQrContainer.addEventListener('click', () => {
+  const phone = waPhoneInput.value.trim();
+  if(!phone) return;
+  const link = buildWALink(phone, waMessageText.value);
+  waQrFullscreenContent.innerHTML = '';
+  if(typeof QRCode !== 'undefined'){
+    const size = Math.floor(Math.min(window.innerWidth, window.innerHeight) * 0.8);
+    new QRCode(waQrFullscreenContent, { text: link, width: size, height: size, colorDark: '#10203F', colorLight: '#ffffff' });
+  }
+  waQrFullscreenModal.style.display = 'flex';
+});
+waQrFullscreenModal.addEventListener('click', () => waQrFullscreenModal.style.display = 'none');
 
 /* ===================== إعدادات الفصل الدراسي (قراءة فقط من الملف) ===================== */
 const LS_TERM_KEY = 'attendanceTermConfig_v1';
@@ -2758,7 +2958,9 @@ const dailyDateInput = document.getElementById('dailyDateInput');
 const dailyDateWeekday = document.getElementById('dailyDateWeekday');
 
 function initDailyPage(){
-  dailyPageDate = APP.availableDates.length ? APP.availableDates[APP.availableDates.length-1] : fmtDate(new Date());
+  if(!dailyPageDate || !APP.availableDates.includes(dailyPageDate)){
+    dailyPageDate = APP.availableDates.length ? latestSchoolDay() : fmtDate(new Date());
+  }
   if(APP.availableDates.length){
     dailyDateInput.min = APP.availableDates[0];
     dailyDateInput.max = APP.availableDates[APP.availableDates.length-1];
@@ -2792,7 +2994,7 @@ document.getElementById('btnDailyPrev').addEventListener('click', () => shiftDai
 document.getElementById('btnDailyNext').addEventListener('click', () => shiftDailyDate(1));
 document.getElementById('btnDailyLatest').addEventListener('click', () => {
   if(!APP.availableDates.length) return;
-  dailyPageDate = APP.availableDates[APP.availableDates.length-1];
+  dailyPageDate = latestSchoolDay();
   syncDailyDateInput();
   renderDailyPage();
 });
@@ -2804,13 +3006,11 @@ dailyDateInput.addEventListener('change', () => {
 
 /* غائبو شعبة معيّنة في يوم معيّن: أي طالب ظُكر غائباً في أي حصة مسجَّلة لتلك الشعبة ذلك اليوم */
 function computeClassDayAbsentees(date, className){
-  const map = new Map();
-  APP.records.forEach(r => {
-    if(!r.date || fmtDate(r.date) !== date || r.currentClass !== className) return;
-    const key = r.studentId || ('name:' + r.studentName);
-    if(!map.has(key)) map.set(key, { name: r.studentName, id: r.studentId || '' });
-  });
-  return Array.from(map.values());
+  // نعتمد على APP.dailyAbsences المحسوبة مسبقاً وبشكل صحيح (الطالب الغائب في كل الحصص المسجَّلة فقط)
+  // بدلاً من اتحاد كل سجلات الغياب الجزئي (الذي كان يُدرج أي طالب غاب في أي حصة، حتى لو حضر البقية)
+  return APP.dailyAbsences
+    .filter(d => d.date === date && d.currentClass === className)
+    .map(d => ({ name: d.studentName, id: d.studentId || '' }));
 }
 
 function renderDailyPage(){
@@ -3222,6 +3422,201 @@ function renderSchoolDataDisplay(){
     });
   });
 }
+
+/* ===================== تقارير الصفوف (عرض/تصدير PDF/تصدير Excel) ===================== */
+function initClassReportsTab(){
+  const sel = document.getElementById('classReportSelect');
+  if(!sel) return;
+  if(!APP.loaded){ sel.innerHTML = '<option value="">لا توجد بيانات - ارفع الملف أولاً</option>'; return; }
+  const classes = APP.classesRegistry.slice().sort(sortClasses);
+  sel.innerHTML = classes.map(c => `<option value="${escapeHtml(c.className)}">${escapeHtml(c.className)}</option>`).join('');
+
+  const weekSel = document.getElementById('classReportWeekSelect');
+  const segments = getSegments();
+  let weekHtml = '';
+  segments.forEach(seg => {
+    weekHtml += `<optgroup label="${escapeHtml(seg.label)}">`;
+    seg.weeks.forEach(w => {
+      weekHtml += `<option value="seg:${seg.segIndex}:w:${w.localIndex}">الأسبوع ${w.localIndex} (${fmtDateShortAr(w.from)})</option>`;
+    });
+    weekHtml += '</optgroup>';
+  });
+  weekSel.innerHTML = weekHtml || '<option value="">لا توجد بيانات فصل دراسي</option>';
+
+  document.getElementById('classReportExportActions').style.display = 'none';
+  document.getElementById('classReportPreview').innerHTML = '';
+}
+
+document.getElementById('classReportRangeSelect').addEventListener('change', () => {
+  const val = document.getElementById('classReportRangeSelect').value;
+  document.getElementById('classReportWeekGroup').style.display = val === 'week' ? 'flex' : 'none';
+});
+
+function getClassReportDateRange(){
+  const rangeVal = document.getElementById('classReportRangeSelect').value;
+  if(rangeVal === 'all') return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+  const weekVal = document.getElementById('classReportWeekSelect').value;
+  if(!weekVal) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+  const parts = weekVal.split(':');
+  const segments = getSegments();
+  const seg = segments.find(s => String(s.segIndex) === parts[1]);
+  if(!seg) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+  const w = seg.weeks.find(ww => String(ww.localIndex) === parts[3]);
+  if(!w) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+  return { dateFrom: isoDateFromDate(w.from), dateTo: isoDateFromDate(w.to), label: `${seg.label} - الأسبوع ${w.localIndex} (${fmtDateShortAr(w.from)})` };
+}
+
+function generateClassReportData(className, dateFrom, dateTo){
+  // أيام الدوام الفعلية التي رُصد فيها حضور لهذه الشعبة تحديداً ضمن النطاق المختار
+  const days = APP.availableDates.filter(d => {
+    if(dateFrom && d < dateFrom) return false;
+    if(dateTo && d > dateTo) return false;
+    const cells = APP.submissionCells.get(d);
+    return cells && cells.has(className);
+  }).sort();
+
+  // كل طلاب الشعبة من قائمة الطلاب (وليس فقط من ظهر لهم غياب)، بترتيب "م" الأصلي
+  const students = Array.from(APP.roster.values())
+    .filter(s => s.className === className)
+    .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
+
+  // فهرسة سريعة: يوم كامل غياب لكل (يوم|رقم الطالب)
+  const fullDaySet = new Set();
+  APP.dailyAbsences.forEach(d => { if(d.currentClass === className) fullDaySet.add(d.date + SEP + (d.studentId || ('name:'+d.studentName))); });
+
+  // فهرسة سريعة: عدد حصص الغياب الجزئي لكل (يوم|رقم الطالب)
+  const partialCountMap = new Map();
+  APP.records.forEach(r => {
+    if(r.currentClass !== className || !r.date) return;
+    const dk = fmtDate(r.date);
+    const key = dk + SEP + (r.studentId || ('name:'+r.studentName));
+    if(fullDaySet.has(key)) return; // مُحتسَب أصلاً كغياب يوم كامل، لا نُكرره كجزئي
+    partialCountMap.set(key, (partialCountMap.get(key)||0) + 1);
+  });
+
+  const matrix = students.map(s => {
+    const key0 = s.studentId || ('name:'+s.studentName);
+    const cells = days.map(d => {
+      const key = d + SEP + key0;
+      if(fullDaySet.has(key)) return { type: 'full' };
+      if(partialCountMap.has(key)) return { type: 'partial', count: partialCountMap.get(key) };
+      return { type: 'present' };
+    });
+    return { student: s, cells };
+  });
+
+  return { days, matrix };
+}
+
+function classReportCellHtml(cell){
+  if(cell.type === 'full') return '<td class="cr-cell cr-full" title="غياب يوم كامل">✕</td>';
+  if(cell.type === 'partial') return `<td class="cr-cell cr-partial" title="غياب جزئي (${cell.count} حصة)">${fmt(cell.count)}</td>`;
+  return '<td class="cr-cell cr-present"></td>';
+}
+
+function renderClassReportPreview(className, range, data){
+  const box = document.getElementById('classReportPreview');
+  if(!data.days.length){
+    box.innerHTML = `<div class="note-box">${escapeHtml(className)} — ${escapeHtml(range.label)} — لا توجد أيام دوام مسجَّلة لهذه الشعبة ضمن هذا النطاق.</div>`;
+    return;
+  }
+  const dayHeaders = data.days.map(d => `<th title="${escapeHtml(d)}">${escapeHtml(fmtDateShortAr(toDateFromKey(d)))}</th>`).join('');
+  const rows = data.matrix.map(row => `
+    <tr>
+      <td class="cr-student-cell">${escapeHtml(row.student.studentName)} <span class="hint mono">(${escapeHtml(row.student.studentId)})</span></td>
+      ${row.cells.map(classReportCellHtml).join('')}
+    </tr>`).join('');
+
+  box.innerHTML = `
+    <div class="note-box">${escapeHtml(className)} — ${escapeHtml(range.label)} — ${fmt(data.days.length)} يوم دوام × ${fmt(data.matrix.length)} طالب. <span class="cr-full" style="padding:1px 6px;">✕</span> غياب يوم كامل — <span class="cr-partial" style="padding:1px 6px;">٢</span> عدد حصص الغياب الجزئي — خلية فارغة = حاضر</div>
+    <div class="table-scroll">
+      <table class="data-table cr-matrix-table">
+        <thead><tr><th class="cr-student-cell">الطالب</th>${dayHeaders}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+let lastClassReportContext = null;
+
+document.getElementById('btnGenerateClassReport').addEventListener('click', () => {
+  const className = document.getElementById('classReportSelect').value;
+  if(!className) return;
+  const range = getClassReportDateRange();
+  const data = generateClassReportData(className, range.dateFrom, range.dateTo);
+  renderClassReportPreview(className, range, data);
+  lastClassReportContext = { className, range, data };
+  document.getElementById('classReportExportActions').style.display = 'flex';
+  // جدول بعمود لكل يوم لا يصلح للطباعة إن كانت الأيام كثيرة (عرض الصفحة محدود) - نكتفي بتصدير Excel حينها
+  const pdfBtn = document.getElementById('btnClassReportPDF');
+  const tooWideForPDF = data.days.length > 10;
+  pdfBtn.style.display = tooWideForPDF ? 'none' : 'inline-flex';
+  document.getElementById('classReportPdfNote').style.display = tooWideForPDF ? 'inline' : 'none';
+});
+
+function buildClassReportPrintHTML(ctx){
+  const { className, range, data } = ctx;
+  const logos = Array.from(document.querySelectorAll('header.topbar .brand-logo')).map(img => img.src);
+  const moeLogo = logos[0] || '', schoolLogo = logos[1] || '';
+  const dayHeaders = data.days.map(d => `<th>${escapeHtml(fmtDateShortAr(toDateFromKey(d)))}</th>`).join('');
+  const rows = data.matrix.map(row => `
+    <tr>
+      <td style="text-align:start;font-weight:700;">${escapeHtml(row.student.studentName)} (${escapeHtml(row.student.studentId)})</td>
+      ${row.cells.map(c => c.type === 'full' ? '<td style="background:var(--berry-soft);color:var(--berry);font-weight:800;">✕</td>' : c.type === 'partial' ? `<td style="background:#FBF3D9;color:#8A6A1E;font-weight:800;">${fmt(c.count)}</td>` : '<td></td>').join('')}
+    </tr>`).join('');
+
+  return `
+    <div class="print-report-head">
+      ${moeLogo ? `<img src="${moeLogo}">` : ''}
+      <div class="prh-text">
+        <h1>تقرير غياب الصف</h1>
+        <h2>${escapeHtml(SCHOOL_NAME)}</h2>
+        <p>${escapeHtml(className)} — ${escapeHtml(range.label)} — ${fmt(data.days.length)} يوم × ${fmt(data.matrix.length)} طالب. ✕ = غياب يوم كامل، رقم = عدد حصص الغياب الجزئي</p>
+      </div>
+      ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
+    </div>
+    <table class="print-report-table entry-print-table">
+      <thead><tr><th style="text-align:start;">الطالب</th>${dayHeaders}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="print-report-footer">
+      <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
+      <span>توقيع المسؤول: ______________________</span>
+    </div>
+  `;
+}
+document.getElementById('btnClassReportPDF').addEventListener('click', () => {
+  if(!lastClassReportContext) return;
+  document.getElementById('classReportPrintArea').innerHTML = buildClassReportPrintHTML(lastClassReportContext);
+  document.body.classList.add('printing-class-report');
+  window.print();
+});
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-class-report');
+});
+
+/* تصدير Excel: ملف جديد مستقل تماماً (لا علاقة له بملف الحضور المرتبط) - آمن تماماً ولا يمسّ أي جدول Excel قائم */
+function exportClassReportExcel(ctx){
+  const { className, range, data } = ctx;
+  const wb = XLSX.utils.book_new();
+
+  const header = ['الطالب', 'الرقم', ...data.days.map(d => fmtDateShortAr(toDateFromKey(d)))];
+  const aoa = [header];
+  data.matrix.forEach(row => {
+    const cells = row.cells.map(c => c.type === 'full' ? 'غياب كامل' : c.type === 'partial' ? c.count : '');
+    aoa.push([row.student.studentName, row.student.studentId || '', ...cells]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  XLSX.utils.book_append_sheet(wb, ws, 'تقرير الغياب');
+
+  const safeClassName = className.replace(/\//g, '-');
+  XLSX.writeFile(wb, `تقرير_${safeClassName}.xlsx`);
+}
+document.getElementById('btnClassReportExcel').addEventListener('click', () => {
+  if(!lastClassReportContext) return;
+  exportClassReportExcel(lastClassReportContext);
+});
 
 /* ===================== بدء التشغيل ===================== */
 (function init(){
