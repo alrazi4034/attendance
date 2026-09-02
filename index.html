@@ -353,7 +353,7 @@
   .ssum-kpi .n{font-family:'Cairo',sans-serif;font-size:20px;font-weight:800;color:var(--plum);}
   .ssum-kpi .l{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
   .grade-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-  .grade-summary-chip{background:var(--bg);border-radius:0;border:1px solid var(--line);padding:5px 8px;font-size:10.5px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:0;line-height:1.15;}
+  .grade-summary-chip{background:var(--bg);border-radius:0;border:1px solid var(--line);padding:7px 8px;font-size:10.5px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:0;line-height:1.3;}
   .grade-summary-chip b{color:var(--plum);}
   .daily-grade-block{margin-bottom:18px;}
   .daily-grade-title{font-family:'Cairo',sans-serif;font-size:13.5px;font-weight:800;color:var(--plum);margin-bottom:8px;}
@@ -441,8 +441,12 @@
   .grade-detail-boxes-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
   .grade-detail-box{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--plum);padding:12px 14px;}
   .grade-detail-box h4{margin:0 0 8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;}
-  .grade-detail-box .gdb-row{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;border-bottom:1px dashed var(--line);}
+  .grade-detail-box .gdb-row{display:flex;align-items:center;gap:6px;font-size:10.5px;padding:5px 0;border-bottom:1px dashed var(--line);}
   .grade-detail-box .gdb-row:last-child{border-bottom:none;}
+  .gdb-row-label{flex:0 0 58px;font-weight:700;color:var(--ink);}
+  .gdb-row-bar-wrap{flex:1;height:8px;background:var(--line);}
+  .gdb-row-bar{display:block;height:100%;}
+  .gdb-row-value{flex:0 0 34px;text-align:end;font-family:'IBM Plex Mono',monospace;font-weight:700;}
   @media (max-width:700px){ .grade-detail-boxes-row{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:420px){ .grade-detail-boxes-row{grid-template-columns:1fr;} }
 
@@ -869,7 +873,13 @@ function excelSerialToDate(serial){
 
 function toDateSafe(val){
   if(val == null || val === '') return null;
-  if(val instanceof Date && !isNaN(val)) return val;
+  if(val instanceof Date && !isNaN(val)){
+    // SheetJS يقرأ القيمة المكتوبة في الخلية بشكل صحيح عبر القراءة المحلية (Local getters)، لكن المثيل الزمني المطلق
+    // للكائن (getTime()) يعتمد على المنطقة الزمنية لبيئة التشغيل وقت القراءة! (تأكدنا من هذا باختبار مباشر: نفس الخلية
+    // تُعطي غيابات مختلفة في getTime() حسب توقيت الجهاز). نُعيد بناء القيمة بترميز UTC ثابت من القراءة المحلية، لضمان
+    // استقلالية تامة عن منطقة تشغيل المتصفح، بدل الاعتماد على getTime() الأصلي مباشرة.
+    return new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate(), val.getHours(), val.getMinutes(), val.getSeconds()));
+  }
   if(typeof val === 'number') return excelSerialToDate(val);
   if(typeof val === 'string'){
     const d = new Date(val);
@@ -2058,7 +2068,11 @@ function renderStatsKpiBoxes(filteredDaily, classAvg){
     return `
       <div class="grade-detail-box" style="border-top-color:${accent};">
         <h4 style="color:${accent};">${escapeHtml(g.grade)}</h4>
-        ${classesOfGrade.map(c => `<div class="gdb-row"><span>${escapeHtml(c.className)}</span><span>${c.avgRate}%</span></div>`).join('') || '<div class="gdb-row">لا توجد بيانات</div>'}
+        ${classesOfGrade.map(c => `<div class="gdb-row">
+          <span class="gdb-row-label">${escapeHtml(c.className)}</span>
+          <span class="gdb-row-bar-wrap"><span class="gdb-row-bar" style="width:${c.avgRate}%;background:${accent};"></span></span>
+          <span class="gdb-row-value">${c.avgRate}%</span>
+        </div>`).join('') || '<div class="gdb-row">لا توجد بيانات</div>'}
       </div>`;
   }).join('');
 }
@@ -3062,7 +3076,11 @@ function renderDailyPage(){
       <div class="ssum-kpi"><div class="n">${rateAll}%</div><div class="l">نسبة الحضور العامة</div></div>
     </div>
     <div class="grade-summary-row">
-      ${gradeSummary.map(g => `<div class="grade-summary-chip" style="background:${gradeAccentSoft(g.grade)};border-color:${gradeAccent(g.grade)};flex-direction:column;gap:1px;"><span style="font-size:9px;font-weight:800;color:${gradeAccent(g.grade)};">${escapeHtml(g.grade)}</span><span><b style="font-size:17px;color:${gradeAccent(g.grade)};">${fmt(g.present)}</b><span style="font-size:9.5px;color:var(--ink-soft);"> من ${fmt(g.total)}</span></span></div>`).join('')}
+      ${gradeSummary.map(g => `<div class="grade-summary-chip" style="background:${gradeAccentSoft(g.grade)};border-color:${gradeAccent(g.grade)};flex-direction:column;gap:2px;">
+        <span style="font-size:13px;font-weight:800;color:${gradeAccent(g.grade)};">${escapeHtml(g.grade)}</span>
+        <span style="font-size:13px;font-weight:800;color:${gradeAccent(g.grade)};">${g.rate}%</span>
+        <span><b style="font-size:19px;color:${gradeAccent(g.grade)};">${fmt(g.present)}</b><span style="font-size:13px;color:var(--ink-soft);"> من ${fmt(g.total)}</span></span>
+      </div>`).join('')}
     </div>
   `;
 
