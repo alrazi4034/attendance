@@ -126,11 +126,17 @@
   .school-data-class-title{font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;margin-bottom:6px;}
   .cr-matrix-table{table-layout:auto;}
   .cr-matrix-table th, .cr-matrix-table td{padding:5px 4px;font-size:11px;text-align:center;white-space:nowrap;}
-  .cr-student-cell{position:sticky;right:0;background:var(--panel);text-align:start !important;font-weight:700;z-index:2;min-width:150px;}
+  .cr-student-cell{background:var(--panel);text-align:start !important;font-weight:700;z-index:2;}
+  .cr-sticky-2{position:sticky;right:0;min-width:34px;text-align:center !important;}
+  .cr-sticky-1{position:sticky;right:34px;min-width:150px;}
+  .cr-sortable{cursor:pointer;user-select:none;}
+  .cr-sortable:hover{background:var(--bg);}
   .cr-cell{width:38px;}
   .cr-full{background:var(--berry-soft);color:var(--berry);font-weight:800;}
   .cr-partial{background:#FBF3D9;color:#8A6A1E;font-weight:800;}
   .cr-present{background:transparent;}
+  .cr-na{background:var(--bg);color:var(--ink-soft);}
+  .cr-total-col{width:56px;}
   .roster-class-body{padding:0 14px 14px;}
   .roster-add-form, .roster-bulk-form{background:var(--bg);border:1px solid var(--line);padding:12px;margin-bottom:12px;}
   .btn.tiny.danger{background:var(--berry-soft);color:var(--berry);}
@@ -306,11 +312,15 @@
   .thresh-row label{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
   #entryGridTable{border-collapse:separate;border-spacing:4px;}
   #entryGridTable th{background:var(--panel);}
-  .entry-cell{min-width:64px;text-align:center;border-radius:0;font-size:11.5px;font-weight:700;padding:8px 4px !important;border:1px solid transparent;}
+  .entry-cell{min-width:110px;text-align:center;border-radius:0;font-size:11.5px;font-weight:700;padding:8px 6px !important;border:1px solid transparent;}
   .entry-cell.recorded{background:var(--forest-soft);color:var(--forest);border-color:var(--forest);}
   .entry-cell.missing{background:var(--berry-soft);color:var(--berry);border-color:var(--berry);}
-  .entry-cell .ec-sub{font-size:9.5px;font-weight:500;opacity:.8;display:block;}
+  .entry-cell .ec-line1{font-size:11.5px;font-weight:800;}
+  .entry-cell .ec-line2{font-size:9.5px;font-weight:500;opacity:.85;margin-top:2px;}
   .entry-class-label{white-space:nowrap;font-weight:700;}
+  #entryGridTable tr:last-child td.entry-cell{border-bottom:1px solid transparent;}
+  #entryGridTable tr:last-child td.entry-cell.recorded{border-color:var(--forest);}
+  #entryGridTable tr:last-child td.entry-cell.missing{border-color:var(--berry);}
 
   .comm-box{background:var(--forest-soft);border-radius:0;padding:10px 12px;margin-top:10px;}
   .comm-box .comm-title{font-size:12px;font-weight:700;color:var(--forest);margin-bottom:6px;}
@@ -329,6 +339,7 @@
   .filters-row-flat + .filters-row-flat{border-top:1px dashed var(--line);}
 
   .alert-box{background:var(--berry-soft);border:1px solid var(--berry);border-radius:0;padding:10px 12px;font-size:12px;color:var(--berry);margin-top:8px;}
+  .alert-class-chip{display:inline-block;padding:3px 12px;border-radius:14px;background:#fff;border:1px solid var(--berry);color:var(--berry);font-size:11px;font-weight:700;}
   .alert-box.ok{background:var(--forest-soft);border-color:var(--forest);color:var(--forest);}
   .last-sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:12.5px;}
   .last-sub-grid .li{color:var(--ink-soft);}
@@ -391,6 +402,10 @@
   body.printing-student-report #studentReportPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
   body.printing-class-report > *:not(#classReportPrintArea){display:none !important;}
   body.printing-class-report #classReportPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
+  #classReportPrintArea{display:none;}
+  body.printing-paper-sheets > *:not(#paperSheetsPrintArea){display:none !important;}
+  body.printing-paper-sheets #paperSheetsPrintArea{display:block !important;padding:20px;font-family:'IBM Plex Sans Arabic',sans-serif;}
+  #paperSheetsPrintArea{display:none;}
   #studentReportPrintArea{page:auto;}
   body.printing-entry-report > *:not(#entryReportPrintArea){display:none !important;}
   body.printing-entry-report #entryReportPrintArea{display:block !important;padding:14px;font-family:'IBM Plex Sans Arabic',sans-serif;}
@@ -413,6 +428,10 @@
   .entry-cell-clickable{cursor:pointer;}
   .entry-cell-clickable:hover{outline:2px solid var(--plum);outline-offset:-2px;}
   .print-report-head{display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--plum);padding-bottom:14px;margin-bottom:18px;}
+  .print-page-wrap{width:100%;border-collapse:collapse;}
+  .print-page-wrap thead{display:table-header-group;}
+  .print-page-wrap tbody{display:table-row-group;}
+  .print-page-wrap .print-report-head{margin-bottom:14px;}
   .print-report-head img{height:64px;}
   .print-report-head .prh-text{flex:1;text-align:center;}
   .print-report-head h1{font-family:'Cairo',sans-serif;font-size:19px;color:var(--plum);margin:0 0 4px;}
@@ -429,7 +448,16 @@
   .print-report-table th{background:#F3F3F0;color:var(--ink);font-weight:800;font-size:11px;}
   .print-report-table td.names-cell{text-align:start;font-size:10.5px;line-height:1.7;word-wrap:break-word;overflow-wrap:break-word;}
   .print-report-table th,.print-report-table td{word-wrap:break-word;overflow-wrap:break-word;}
-  .print-report-footer{margin-top:24px;display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);}
+  .print-report-footer{margin-top:24px;display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);page-break-inside:avoid;}
+  .print-report-table tr{page-break-inside:avoid;}
+  .print-school-summary{page-break-inside:avoid;}
+  .cr-print-page{page-break-inside:avoid;}
+  .cr-print-table{font-size:9px;}
+  .cr-print-table td{padding:7px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cr-print-table th{padding:3px 2px;white-space:normal;line-height:1.15;word-break:break-word;}
+  .paper-sheet-table th, .paper-sheet-table td{padding:3.7px 4px;font-size:11px;text-align:center;border:1px solid var(--line);}
+  .paper-sheet-table th{white-space:normal;line-height:1.15;}
+  .paper-sheet-signature-row td{background:var(--bg);font-weight:700;padding-top:12px;padding-bottom:12px;}
 
   .overall-rate-display{font-family:'Cairo',sans-serif;font-size:42px;font-weight:800;color:var(--plum);text-align:center;padding:10px 0;}
   .grade-rate-line{display:flex;align-items:center;gap:10px;padding:6px 0;}
@@ -724,8 +752,13 @@
               <span class="filter-label">النطاق الزمني</span>
               <select id="classReportRangeSelect">
                 <option value="all">كل السجل</option>
+                <option value="term">فصل دراسي</option>
                 <option value="week">أسبوع محدد</option>
               </select>
+            </div>
+            <div class="filter-group" id="classReportTermGroup" style="display:none;">
+              <span class="filter-label">الفصل الدراسي</span>
+              <select id="classReportTermSelect"></select>
             </div>
             <div class="filter-group" id="classReportWeekGroup" style="display:none;">
               <span class="filter-label">الأسبوع</span>
@@ -824,6 +857,7 @@
   <!-- ===== منطقة تقرير الطالب الرسمي (للطباعة فقط - A4 عمودي) ===== -->
   <div id="studentReportPrintArea"></div>
   <div id="classReportPrintArea"></div>
+  <div id="paperSheetsPrintArea"></div>
 
   <!-- ===== منطقة التقرير الشامل للفترة (للطباعة فقط - A4 عمودي) ===== -->
   <div id="periodReportPrintArea"></div>
@@ -835,6 +869,25 @@
       <div class="modal-body" id="entryCellModalBody"></div>
       <div class="modal-foot">
         <button class="btn small primary" id="btnCloseEntryCellModal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة تحديث ومقارنة قوائم الصفوف ===== -->
+  <div class="modal-overlay" id="rosterCompareModal">
+    <div class="modal-box" style="max-width:900px;">
+      <div class="modal-head">🔄 تحديث القوائم ومقارنتها</div>
+      <div class="modal-body">
+        <div class="note-box">حدّث النصوص أدناه لكل شعبة (سطر لكل طالب بصيغة: اسم الطالب (رقم الطالب))، ثم اضغط "قارن وأظهر التغييرات". يمكنك أيضاً تصدير القوائم المحدَّثة كملف Excel مباشرة.</div>
+        <div id="rosterCompareTextareas"></div>
+        <div class="report-actions" style="margin-top:12px;">
+          <button class="btn small primary" id="btnCompareRosterLists">قارن وأظهر التغييرات</button>
+          <button class="btn small primary" id="btnExportUpdatedRosterExcel">⬇️ تصدير القوائم المحدَّثة Excel</button>
+        </div>
+        <div id="rosterCompareResults" style="margin-top:14px;"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn small" id="btnCloseRosterCompareModal">إغلاق</button>
       </div>
     </div>
   </div>
@@ -1462,7 +1515,7 @@ function latestSchoolDay(){
 }
 
 function buildSubmissionCells(allSubmissions){
-  // Map: dateKey -> Map: class -> Map: period -> {count}
+  // Map: dateKey -> Map: class -> Map: period -> {count, teacherName, date}
   const idx = new Map();
   allSubmissions.forEach(s => {
     if(!s.date || !s.class) return;
@@ -1471,8 +1524,7 @@ function buildSubmissionCells(allSubmissions){
     const byClass = idx.get(dk);
     if(!byClass.has(s.class)) byClass.set(s.class, new Map());
     const byPeriod = byClass.get(s.class);
-    const prev = byPeriod.get(s.period) || 0;
-    byPeriod.set(s.period, prev + s.absentCount);
+    byPeriod.set(s.period, { count: s.absentCount, teacherName: s.teacherName, date: s.date });
   });
   return idx;
 }
@@ -1491,7 +1543,7 @@ function updateSchoolIdentityDisplay(){
   const subtitleEl = document.querySelector('.brand-text .subtitle');
   const staffLineEl = document.querySelector('.brand-text .staff-line');
   if(subtitleEl) subtitleEl.textContent = SCHOOL_NAME;
-  if(staffLineEl) staffLineEl.textContent = 'مديرة/مدير المدرسة: ' + PRINCIPAL_NAME + (STUDENT_AFFAIRS_HEAD ? ' — رئيس شؤون الطلبة: ' + STUDENT_AFFAIRS_HEAD : '');
+  if(staffLineEl) staffLineEl.textContent = 'مديرة المدرسة: ' + PRINCIPAL_NAME + (STUDENT_AFFAIRS_HEAD ? ' — رئيس شؤون الطلبة: ' + STUDENT_AFFAIRS_HEAD : '');
 }
 
 
@@ -1508,7 +1560,8 @@ let APP = {
   teachers: [], periods: [], grades: [],
   dailyAbsences: [],
   submissionCells: new Map(),
-  availableDates: []
+  availableDates: [],
+  teacherActivityLog: []
 };
 
 let filters = {
@@ -1759,7 +1812,9 @@ function serializeSubmissionCells(map){
     obj[dk] = {};
     byClass.forEach((byPeriod, cls) => {
       obj[dk][cls] = {};
-      byPeriod.forEach((count, period) => { obj[dk][cls][period] = count; });
+      byPeriod.forEach((info, period) => {
+        obj[dk][cls][period] = { count: info.count, teacherName: info.teacherName, date: info.date ? info.date.toISOString() : null };
+      });
     });
   });
   return obj;
@@ -1770,7 +1825,10 @@ function deserializeSubmissionCells(obj){
     const byClass = new Map();
     Object.keys(obj[dk]).forEach(cls => {
       const byPeriod = new Map();
-      Object.keys(obj[dk][cls]).forEach(period => byPeriod.set(period, obj[dk][cls][period]));
+      Object.keys(obj[dk][cls]).forEach(period => {
+        const info = obj[dk][cls][period];
+        byPeriod.set(period, { count: info.count, teacherName: info.teacherName, date: info.date ? new Date(info.date) : null });
+      });
       byClass.set(cls, byPeriod);
     });
     map.set(dk, byClass);
@@ -1790,7 +1848,8 @@ function persistData(){
       hasPhone: APP.hasPhone,
       dailyAbsences: APP.dailyAbsences,
       submissionCells: serializeSubmissionCells(APP.submissionCells),
-      availableDates: APP.availableDates
+      availableDates: APP.availableDates,
+      teacherActivityLog: (APP.teacherActivityLog || []).map(a => ({ ...a, date: a.date ? a.date.toISOString() : null }))
     };
     localStorage.setItem(LS_KEY, JSON.stringify(serializable));
   }catch(e){ /* تجاهل أخطاء التخزين */ }
@@ -1811,7 +1870,8 @@ function loadPersisted(){
       hasPhone: !!d.hasPhone,
       dailyAbsences: d.dailyAbsences || [],
       submissionCells: deserializeSubmissionCells(d.submissionCells),
-      availableDates: d.availableDates || []
+      availableDates: d.availableDates || [],
+      teacherActivityLog: (d.teacherActivityLog || []).map(a => ({ ...a, date: a.date ? new Date(a.date) : null }))
     };
     entryReportDate = (entryReportDate && APP.availableDates.includes(entryReportDate)) ? entryReportDate : latestSchoolDay();
     return true;
@@ -1971,6 +2031,7 @@ function renderAll(){
   renderStudents(filteredDaily, filteredRecords);
   renderEntryReport();
   renderDailyPage();
+  renderTeachersReport(); // تقرير المعلمين لا يتأثر بأي فلتر عمداً، لكن يجب أن يبقى محدَّثاً مع أي تحديث بيانات بصرف النظر عن التبويب النشط حالياً
 }
 
 /* ---------- نظرة عامة (تركيز على الغياب اليومي الكامل) ---------- */
@@ -2373,6 +2434,7 @@ function buildStudentsListPrintHTML(){
       <td>${r.rate != null ? r.rate + '%' : '—'}</td>
     </tr>`).join('');
   return `
+    <table class="print-page-wrap"><thead><tr><td>
     <div class="print-report-head">
       ${moeLogo ? `<img src="${moeLogo}">` : ''}
       <div class="prh-text">
@@ -2382,6 +2444,7 @@ function buildStudentsListPrintHTML(){
       </div>
       ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
     </div>
+    </td></tr></thead><tbody><tr><td>
     <table class="print-report-table">
       <thead><tr><th>الاسم</th><th>الشعبة</th><th>أيام الغياب</th><th>حصص الغياب</th><th>نسبة الحضور اليومي</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -2390,6 +2453,7 @@ function buildStudentsListPrintHTML(){
       <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
       <span>توقيع المسؤول: ______________________</span>
     </div>
+    </td></tr></tbody></table>
   `;
 }
 document.getElementById('btnStudentsListPrint').addEventListener('click', () => {
@@ -2463,9 +2527,12 @@ function renderEntryReport(){
     periods.forEach(p => {
       const has = byPeriod && byPeriod.has(p);
       if(has) recordedCount++;
-      const count = has ? byPeriod.get(p) : null;
+      const info = has ? byPeriod.get(p) : null;
       body += has
-        ? `<td class="entry-cell recorded entry-cell-clickable" data-cls="${escapeHtml(c.className)}" data-period="${escapeHtml(p)}">✔ تم الرصد<span class="ec-sub">${fmt(count)} غياب</span></td>`
+        ? `<td class="entry-cell recorded entry-cell-clickable" data-cls="${escapeHtml(c.className)}" data-period="${escapeHtml(p)}">
+            <div class="ec-line1">تم ✓ (الغياب: ${fmt(info.count)})</div>
+            <div class="ec-line2">${escapeHtml(info.teacherName||'')} ${escapeHtml(fmtTime24(info.date))}</div>
+          </td>`
         : `<td class="entry-cell missing">✘ لم يُسجَّل</td>`;
     });
     body += '</tr>';
@@ -2494,8 +2561,17 @@ function openEntryCellModal(date, className, period){
     body.innerHTML = `<div class="dcb-none" style="padding:14px 0;">لا يوجد غياب مسجَّل في هذه الحصة (حضور كامل).</div>`;
   } else {
     const entryTime = fmtTime24(records[0].date); // وقت إكمال الاستبانة الفعلي بتوقيت الإمارات (بعد التصحيح من غرينتش)
+    // نحدّد من هؤلاء غاب اليوم كاملاً (وليس هذه الحصة فقط) لتمييزه بخط عريض
+    const fullDaySet = new Set();
+    APP.dailyAbsences.forEach(d => { if(d.date === date && d.currentClass === className) fullDaySet.add(d.studentKey); });
     body.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--ink-soft);">المعلم: ${escapeHtml(records[0].teacherName || '—')} — وقت إدخال الغياب: ${escapeHtml(entryTime)} (بتوقيت الإمارات)</div>
-      <ul class="dcb-name-list">${records.map(r => `<li>${escapeHtml(r.studentName)}${r.studentId? ' <span class="dcb-id">('+escapeHtml(r.studentId)+')</span>' : ''}</li>`).join('')}</ul>`;
+      <div class="note-box" style="margin-bottom:8px;font-size:11px;"><b>الاسم بخط عريض</b> = غائب اليوم كاملاً — الاسم العادي = غائب عن هذه الحصة فقط</div>
+      <ul class="dcb-name-list">${records.map(r => {
+        const key = r.studentId || ('name:'+r.studentName);
+        const isFullDay = fullDaySet.has(key);
+        const nameHtml = isFullDay ? `<b>${escapeHtml(r.studentName)}</b>` : escapeHtml(r.studentName);
+        return `<li>${nameHtml}${r.studentId? ' <span class="dcb-id">('+escapeHtml(r.studentId)+')</span>' : ''}</li>`;
+      }).join('')}</ul>`;
   }
   document.getElementById('entryCellModal').style.display = 'flex';
 }
@@ -2519,7 +2595,7 @@ function buildEntryReportPrintHTML(date){
     const cells = periods.map(p => {
       const has = byPeriod && byPeriod.has(p);
       if(has) recordedCount++;
-      const count = has ? byPeriod.get(p) : null;
+      const count = has ? byPeriod.get(p).count : null;
       return has ? `<td class="recorded">✔ ${fmt(count)}</td>` : `<td class="missing">✘</td>`;
     }).join('');
     return `<tr><td class="entry-print-class-label">${escapeHtml(c.className)}</td>${cells}</tr>`;
@@ -2529,6 +2605,7 @@ function buildEntryReportPrintHTML(date){
   const colWidth = (88 / periods.length).toFixed(1);
 
   return `
+    <table class="print-page-wrap"><thead><tr><td>
     <div class="print-report-head">
       ${moeLogo ? `<img src="${moeLogo}">` : ''}
       <div class="prh-text">
@@ -2538,6 +2615,7 @@ function buildEntryReportPrintHTML(date){
       </div>
       ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
     </div>
+    </td></tr></thead><tbody><tr><td>
     <table class="entry-print-table">
       <colgroup><col style="width:12%">${periods.map(()=>`<col style="width:${colWidth}%">`).join('')}</colgroup>
       <thead><tr><th>الصف / الحصة</th>${periods.map(p=>`<th>حصة ${escapeHtml(p)}</th>`).join('')}</tr></thead>
@@ -2547,6 +2625,7 @@ function buildEntryReportPrintHTML(date){
       <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
       <span>توقيع المسؤول: ______________________</span>
     </div>
+    </td></tr></tbody></table>
   `;
 }
 document.getElementById('btnEntryReportPrint').addEventListener('click', () => {
@@ -2563,28 +2642,34 @@ window.addEventListener('afterprint', () => {
 function renderTeachersReport(){
   if(!APP.loaded) return;
   const tbody = document.getElementById('teachersTableBody');
-  const byTeacher = new Map();
-  APP.teacherActivityLog.forEach(a => {
-    if(!a.teacherName || !a.date) return;
-    if(!byTeacher.has(a.teacherName)) byTeacher.set(a.teacherName, { count: 0, weeks: new Set() });
-    const o = byTeacher.get(a.teacherName);
-    o.count++;
-    o.weeks.add(fmtDate(mondayOf(fmtDate(a.date))));
-  });
-  const rows = Array.from(byTeacher.entries()).map(([name, o]) => ({
-    name, count: o.count, weeksCount: o.weeks.size,
-    avgPerWeek: o.weeks.size ? (o.count / o.weeks.size) : 0
-  })).sort((a,b) => b.count - a.count);
-  applyTableSort(rows, teachersSortState);
+  if(!tbody) return;
+  try{
+    const byTeacher = new Map();
+    APP.teacherActivityLog.forEach(a => {
+      if(!a.teacherName || !a.date) return;
+      if(!byTeacher.has(a.teacherName)) byTeacher.set(a.teacherName, { count: 0, weeks: new Set() });
+      const o = byTeacher.get(a.teacherName);
+      o.count++;
+      o.weeks.add(fmtDate(mondayOf(fmtDate(a.date))));
+    });
+    const rows = Array.from(byTeacher.entries()).map(([name, o]) => ({
+      name, count: o.count, weeksCount: o.weeks.size,
+      avgPerWeek: o.weeks.size ? (o.count / o.weeks.size) : 0
+    })).sort((a,b) => b.count - a.count);
+    applyTableSort(rows, teachersSortState);
 
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="4">${emptyState('لا توجد بيانات بعد.')}</td></tr>`; return; }
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td>${escapeHtml(r.name)}</td>
-      <td><span class="pill" style="background:var(--plum);">${fmt(r.count)}</span></td>
-      <td>${fmt(r.weeksCount)}</td>
-      <td>${r.avgPerWeek.toFixed(1)}</td>
-    </tr>`).join('');
+    if(!rows.length){ tbody.innerHTML = `<tr><td colspan="4">${emptyState('لا توجد بيانات بعد.')}</td></tr>`; return; }
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td><span class="pill" style="background:var(--plum);">${fmt(r.count)}</span></td>
+        <td>${fmt(r.weeksCount)}</td>
+        <td>${r.avgPerWeek.toFixed(1)}</td>
+      </tr>`).join('');
+  }catch(err){
+    console.error('renderTeachersReport error:', err);
+    tbody.innerHTML = `<tr><td colspan="4">${emptyState('تعذّر عرض تقرير المعلمين — راجع الـ Console لتفاصيل الخطأ.')}</td></tr>`;
+  }
 }
 
 /* ===================== نافذة ملف الطالب ===================== */
@@ -2621,12 +2706,10 @@ function openStudentModal(key){
   const todayForMsg = lastFullDay ? toDateFromKey(lastFullDay) : new Date();
   const weekLabel = lastFullDay ? (() => { const wn = weekNumberForDate(lastFullDay); return wn ? ` (الأسبوع ${wn})` : ''; })() : '';
 
-  const totalMsg = totalAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, dailyHist.length, weekLabel, STUDENT_GENDER_TYPE);
   const dailyMsg = dailyAbsenceInquiryMessage(SCHOOL_NAME, studentName, currentClass, todayForMsg, weekLabel, STUDENT_GENDER_TYPE);
 
   let comm = `<div class="comm-box"><div class="comm-title">📞 التواصل مع ولي الأمر${phone? (' — ' + escapeHtml(phone)) : ' (لا يوجد رقم مسجّل - يمكن إدخاله يدوياً)'}</div>
     <div class="comm-actions">
-      <button class="btn small whatsapp" id="smWaTotal">📩 استفسار عن مجمل الغياب (${fmt(dailyHist.length)} يوم)</button>
       <button class="btn small whatsapp" id="smWaDaily">📩 استفسار غياب اليوم</button>
       <button class="btn small whatsapp" id="smWaMultiDay">📩 استفسار عن أيام محددة (اختر ✓ من الجدول أدناه)</button>
     </div></div>`;
@@ -2658,7 +2741,6 @@ function openStudentModal(key){
       <table class="data-table"><thead><tr><th>التاريخ</th><th>اليوم</th><th>الحصة</th><th>الصف وقتها</th><th>المعلم</th></tr></thead><tbody>${periodRows || '<tr><td colspan="5">لا يوجد</td></tr>'}</tbody></table>
     </div>
   `;
-  document.getElementById('smWaTotal').addEventListener('click', () => openWhatsAppModal(studentName, currentClass, phone, totalMsg));
   document.getElementById('smWaDaily').addEventListener('click', () => openWhatsAppModal(studentName, currentClass, phone, dailyMsg));
   document.getElementById('smWaMultiDay').addEventListener('click', () => {
     const checked = Array.from(document.querySelectorAll('.sm-day-check:checked')).map(cb => cb.value).sort();
@@ -2695,6 +2777,7 @@ function buildStudentReportPrintHTML(key){
   const periodRows = periodHist.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${weekdayName(r.date)}</td><td>${escapeHtml(r.period)}</td><td>${escapeHtml(r.teacherName)}</td></tr>`).join('');
 
   return `
+    <table class="print-page-wrap"><thead><tr><td>
     <div class="print-report-head">
       ${moeLogo ? `<img src="${moeLogo}">` : ''}
       <div class="prh-text">
@@ -2704,6 +2787,7 @@ function buildStudentReportPrintHTML(key){
       </div>
       ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
     </div>
+    </td></tr></thead><tbody><tr><td>
     <div class="print-school-summary" style="grid-template-columns:repeat(2,1fr);">
       <div class="pss-kpi"><div class="n" style="color:#A13A3A;">${fmt(dailyHist.length)}</div><div class="l">أيام الغياب الكامل</div></div>
       <div class="pss-kpi"><div class="n" style="color:#C9A227;">${fmt(periodOnlyCount)}</div><div class="l">حصص الغياب (في أيام حضور)</div></div>
@@ -2716,6 +2800,7 @@ function buildStudentReportPrintHTML(key){
       <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
       <span>توقيع المسؤول: ______________________</span>
     </div>
+    </td></tr></tbody></table>
   `;
 }
 document.getElementById('btnPrintStudent').addEventListener('click', () => {
@@ -2754,6 +2839,7 @@ function buildPeriodReportPrintHTML(){
   const gradeRateRows = byGrade.map(g => `<tr><td style="color:${gradeAccent(g.grade)};font-weight:800;">${escapeHtml(g.grade)}</td><td>${g.rate != null ? g.rate+'%' : '—'}</td></tr>`).join('');
 
   return `
+    <table class="print-page-wrap"><thead><tr><td>
     <div class="print-report-head">
       ${moeLogo ? `<img src="${moeLogo}">` : ''}
       <div class="prh-text">
@@ -2763,6 +2849,7 @@ function buildPeriodReportPrintHTML(){
       </div>
       ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
     </div>
+    </td></tr></thead><tbody><tr><td>
     <div class="print-school-summary">
       <div class="pss-kpi"><div class="n" style="color:var(--plum);">${fmt(filteredDaily.length)}</div><div class="l">إجمالي أيام الغياب الكامل</div></div>
       <div class="pss-kpi"><div class="n" style="color:#A13A3A;">${fmt(uniqueStudents)}</div><div class="l">عدد الطلاب المتأثرين</div></div>
@@ -2781,6 +2868,7 @@ function buildPeriodReportPrintHTML(){
       <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
       <span>توقيع المسؤول: ______________________</span>
     </div>
+    </td></tr></tbody></table>
   `;
 }
 document.getElementById('btnPeriodReportPrint').addEventListener('click', () => {
@@ -3039,7 +3127,12 @@ function renderDailyPage(){
   if(!unfilled.length){
     alertEl.innerHTML = `<div class="alert-box ok">✅ جميع الشعب (${fmt(APP.classesRegistry.length)}) لديها تسجيل غياب واحد على الأقل اليوم.</div>`;
   } else {
-    alertEl.innerHTML = `<div class="alert-box">⚠️ لم يُسجَّل أي غياب اليوم للشعب التالية (${fmt(unfilled.length)}): ${unfilled.map(c=>escapeHtml(c.className)).join('، ')}</div>`;
+    alertEl.innerHTML = `<div class="alert-box">
+      <div style="margin-bottom:6px;">⚠️ لم يُسجَّل أي غياب اليوم للشعب التالية (${fmt(unfilled.length)}):</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${unfilled.map(c => `<span class="alert-class-chip">${escapeHtml(c.className)}</span>`).join('')}
+      </div>
+    </div>`;
   }
 
   // إحصاءات كل شعبة لليوم المحدد (باستخدام العدد الصحيح تاريخياً لهذا اليوم تحديداً)
@@ -3178,29 +3271,35 @@ function buildDailyReportHTML(date){
   }).join('');
 
   return `
-    <div class="print-report-head">
-      ${moeLogo ? `<img src="${moeLogo}">` : ''}
-      <div class="prh-text">
-        <h1>التقرير اليومي للحضور والغياب</h1>
-        <h2>${escapeHtml(SCHOOL_NAME)}</h2>
-        <p>يوم ${escapeHtml(weekdayName(toDateFromKey(date)))} الموافق ${escapeHtml(date)} — مديرة المدرسة: ${escapeHtml(PRINCIPAL_NAME)}</p>
-      </div>
-      ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
-    </div>
+    <table class="print-page-wrap">
+      <thead><tr><td>
+        <div class="print-report-head">
+          ${moeLogo ? `<img src="${moeLogo}">` : ''}
+          <div class="prh-text">
+            <h1>التقرير اليومي للحضور والغياب</h1>
+            <h2>${escapeHtml(SCHOOL_NAME)}</h2>
+            <p>يوم ${escapeHtml(weekdayName(toDateFromKey(date)))} الموافق ${escapeHtml(date)} — مديرة المدرسة: ${escapeHtml(PRINCIPAL_NAME)}</p>
+          </div>
+          ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
+        </div>
+      </td></tr></thead>
+      <tbody><tr><td>
 
-    <div class="print-school-summary">
-      <div class="pss-kpi"><div class="n">${fmt(totalAll)}</div><div class="l">إجمالي الطلاب</div></div>
-      <div class="pss-kpi"><div class="n" style="color:#2F6B4F;">${fmt(presentAll)}</div><div class="l">الحاضرون</div></div>
-      <div class="pss-kpi"><div class="n" style="color:#A13A3A;">${fmt(absentAll)}</div><div class="l">الغائبون</div></div>
-      <div class="pss-kpi"><div class="n">${rateAll}%</div><div class="l">نسبة الحضور العامة</div></div>
-    </div>
+        <div class="print-school-summary">
+          <div class="pss-kpi"><div class="n">${fmt(totalAll)}</div><div class="l">إجمالي الطلاب</div></div>
+          <div class="pss-kpi"><div class="n" style="color:#2F6B4F;">${fmt(presentAll)}</div><div class="l">الحاضرون</div></div>
+          <div class="pss-kpi"><div class="n" style="color:#A13A3A;">${fmt(absentAll)}</div><div class="l">الغائبون</div></div>
+          <div class="pss-kpi"><div class="n">${rateAll}%</div><div class="l">نسبة الحضور العامة</div></div>
+        </div>
 
-    ${gradeSections}
+        ${gradeSections}
 
-    <div class="print-report-footer">
-      <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
-      <span>توقيع المسؤول: ______________________</span>
-    </div>
+        <div class="print-report-footer">
+          <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
+          <span>توقيع المسؤول: ______________________</span>
+        </div>
+      </td></tr></tbody>
+    </table>
   `;
 }
 
@@ -3374,7 +3473,7 @@ function renderSchoolDataDisplay(){
     <h4>🏫 هوية المدرسة</h4>
     <div class="student-info-grid">
       <div class="li">اسم المدرسة</div><div class="lv">${escapeHtml(SCHOOL_NAME || '—')}</div>
-      <div class="li">اسم مدير/ة المدرسة</div><div class="lv">${escapeHtml(PRINCIPAL_NAME || '—')}</div>
+      <div class="li">اسم مديرة المدرسة</div><div class="lv">${escapeHtml(PRINCIPAL_NAME || '—')}</div>
       <div class="li">اسم رئيس شؤون الطلاب</div><div class="lv">${escapeHtml(STUDENT_AFFAIRS_HEAD || '—')}</div>
       <div class="li">العام الدراسي</div><div class="lv">${escapeHtml((termConfig && termConfig.year) || '—')}</div>
       <div class="li">نوع الطلاب</div><div class="lv">${escapeHtml(STUDENT_GENDER_TYPE || 'غير محدد')}</div>
@@ -3385,7 +3484,12 @@ function renderSchoolDataDisplay(){
   const totalStudents = classes.reduce((s,c) => s + (c.total||0), 0);
   const grades = Array.from(new Set(classes.map(c => c.grade))).sort((a,b) => gradeOrderIndex(a) - gradeOrderIndex(b));
   html += `<div class="school-data-section">
-    <h4>👥 الصفوف وأعداد الطلاب <span class="hint">الإجمالي: ${fmt(totalStudents)} طالب</span></h4>
+    <h4>👥 الصفوف وأعداد الطلاب <span class="hint">الإجمالي: ${fmt(totalStudents)} طالب</span>
+      <span class="report-actions" style="margin:0;">
+        <button class="btn small primary" id="btnOpenRosterCompare">🔄 تحديث القوائم ومقارنتها</button>
+        <button class="btn small primary" id="btnPrintPaperSheets">🖨️ طباعة كشوف غياب ورقية</button>
+      </span>
+    </h4>
     <div id="schoolDataGradesBox">
       ${grades.map(g => {
         const classesOfGrade = classes.filter(c => c.grade === g);
@@ -3439,6 +3543,11 @@ function renderSchoolDataDisplay(){
       if(d.open) gradeDetailsEls.forEach(other => { if(other !== d) other.open = false; });
     });
   });
+
+  const rosterCompareBtn = document.getElementById('btnOpenRosterCompare');
+  if(rosterCompareBtn) rosterCompareBtn.addEventListener('click', openRosterCompareModal);
+  const paperSheetsBtn = document.getElementById('btnPrintPaperSheets');
+  if(paperSheetsBtn) paperSheetsBtn.addEventListener('click', printPaperAttendanceSheets);
 }
 
 /* ===================== تقارير الصفوف (عرض/تصدير PDF/تصدير Excel) ===================== */
@@ -3447,10 +3556,14 @@ function initClassReportsTab(){
   if(!sel) return;
   if(!APP.loaded){ sel.innerHTML = '<option value="">لا توجد بيانات - ارفع الملف أولاً</option>'; return; }
   const classes = APP.classesRegistry.slice().sort(sortClasses);
-  sel.innerHTML = classes.map(c => `<option value="${escapeHtml(c.className)}">${escapeHtml(c.className)}</option>`).join('');
+  sel.innerHTML = '<option value="__ALL__">كل الصفوف</option>' + classes.map(c => `<option value="${escapeHtml(c.className)}">${escapeHtml(c.className)}</option>`).join('');
+
+  const segments = getSegments();
+
+  const termSel = document.getElementById('classReportTermSelect');
+  termSel.innerHTML = segments.map(seg => `<option value="${seg.segIndex}">${escapeHtml(seg.label)}</option>`).join('') || '<option value="">لا توجد بيانات فصل دراسي</option>';
 
   const weekSel = document.getElementById('classReportWeekSelect');
-  const segments = getSegments();
   let weekHtml = '';
   segments.forEach(seg => {
     weekHtml += `<optgroup label="${escapeHtml(seg.label)}">`;
@@ -3467,16 +3580,25 @@ function initClassReportsTab(){
 
 document.getElementById('classReportRangeSelect').addEventListener('change', () => {
   const val = document.getElementById('classReportRangeSelect').value;
+  document.getElementById('classReportTermGroup').style.display = val === 'term' ? 'flex' : 'none';
   document.getElementById('classReportWeekGroup').style.display = val === 'week' ? 'flex' : 'none';
 });
 
 function getClassReportDateRange(){
   const rangeVal = document.getElementById('classReportRangeSelect').value;
+  const segments = getSegments();
   if(rangeVal === 'all') return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+
+  if(rangeVal === 'term'){
+    const termVal = document.getElementById('classReportTermSelect').value;
+    const seg = segments.find(s => String(s.segIndex) === termVal);
+    if(!seg || !seg.weeks.length) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
+    return { dateFrom: isoDateFromDate(seg.weeks[0].from), dateTo: isoDateFromDate(seg.weeks[seg.weeks.length-1].to), label: seg.label };
+  }
+
   const weekVal = document.getElementById('classReportWeekSelect').value;
   if(!weekVal) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
   const parts = weekVal.split(':');
-  const segments = getSegments();
   const seg = segments.find(s => String(s.segIndex) === parts[1]);
   if(!seg) return { dateFrom: null, dateTo: null, label: 'كل السجل' };
   const w = seg.weeks.find(ww => String(ww.localIndex) === parts[3]);
@@ -3484,8 +3606,8 @@ function getClassReportDateRange(){
   return { dateFrom: isoDateFromDate(w.from), dateTo: isoDateFromDate(w.to), label: `${seg.label} - الأسبوع ${w.localIndex} (${fmtDateShortAr(w.from)})` };
 }
 
-function generateClassReportData(className, dateFrom, dateTo){
-  // أيام الدوام الفعلية التي رُصد فيها حضور لهذه الشعبة تحديداً ضمن النطاق المختار
+/* يبني بيانات تقرير شعبة واحدة: أيام دوامها ضمن النطاق، طلابها، ومصفوفة الحضور/الغياب لكل يوم */
+function generateSingleClassReportData(className, dateFrom, dateTo){
   const days = APP.availableDates.filter(d => {
     if(dateFrom && d < dateFrom) return false;
     if(dateTo && d > dateTo) return false;
@@ -3493,116 +3615,202 @@ function generateClassReportData(className, dateFrom, dateTo){
     return cells && cells.has(className);
   }).sort();
 
-  // كل طلاب الشعبة من قائمة الطلاب (وليس فقط من ظهر لهم غياب)، بترتيب "م" الأصلي
   const students = Array.from(APP.roster.values())
     .filter(s => s.className === className)
     .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
 
-  // فهرسة سريعة: يوم كامل غياب لكل (يوم|رقم الطالب)
   const fullDaySet = new Set();
   APP.dailyAbsences.forEach(d => { if(d.currentClass === className) fullDaySet.add(d.date + SEP + (d.studentId || ('name:'+d.studentName))); });
 
-  // فهرسة سريعة: عدد حصص الغياب الجزئي لكل (يوم|رقم الطالب)
   const partialCountMap = new Map();
   APP.records.forEach(r => {
     if(r.currentClass !== className || !r.date) return;
     const dk = fmtDate(r.date);
+    if(dateFrom && dk < dateFrom) return;
+    if(dateTo && dk > dateTo) return;
     const key = dk + SEP + (r.studentId || ('name:'+r.studentName));
-    if(fullDaySet.has(key)) return; // مُحتسَب أصلاً كغياب يوم كامل، لا نُكرره كجزئي
+    if(fullDaySet.has(key)) return;
     partialCountMap.set(key, (partialCountMap.get(key)||0) + 1);
   });
 
   const matrix = students.map(s => {
     const key0 = s.studentId || ('name:'+s.studentName);
+    let fullDayTotal = 0, partialTotal = 0;
     const cells = days.map(d => {
       const key = d + SEP + key0;
-      if(fullDaySet.has(key)) return { type: 'full' };
-      if(partialCountMap.has(key)) return { type: 'partial', count: partialCountMap.get(key) };
+      if(fullDaySet.has(key)){ fullDayTotal++; return { type: 'full' }; }
+      if(partialCountMap.has(key)){ const c = partialCountMap.get(key); partialTotal += c; return { type: 'partial', count: c }; }
       return { type: 'present' };
     });
-    return { student: s, cells };
+    return { student: s, className, cells, fullDayTotal, partialTotal };
   });
 
-  return { days, matrix };
+  return { className, days, matrix };
+}
+
+/* يبني تقرير عدة صفوف (أو كل الصفوف) دفعة واحدة - يُستخدم للمعاينة الموحّدة وتصدير Excel ولتصدير PDF (صفحة لكل صف) */
+function generateClassReportData(classNameOrAll, dateFrom, dateTo){
+  const allClassNames = APP.classesRegistry.slice().sort(sortClasses).map(c => c.className);
+  const classNames = classNameOrAll === '__ALL__' ? allClassNames : [classNameOrAll];
+
+  const perClass = classNames.map(cn => generateSingleClassReportData(cn, dateFrom, dateTo));
+
+  // الأيام الموحّدة لعرض واحد (اتحاد كل أيام كل الشعب المختارة) - يُستخدم فقط في وضع "كل الصفوف" للمعاينة/إكسل الموحّد
+  const unionDaysSet = new Set();
+  perClass.forEach(pc => pc.days.forEach(d => unionDaysSet.add(d)));
+  const unionDays = Array.from(unionDaysSet).sort();
+
+  let serial = 1;
+  const matrix = [];
+  perClass.forEach(pc => {
+    pc.matrix.forEach(row => {
+      // نعيد فهرسة خلايا كل طالب لتطابق unionDays (أيام لا تخص شعبته تظهر كخلية فارغة "لا دوام")
+      const cellByDay = new Map();
+      pc.days.forEach((d,i) => cellByDay.set(d, row.cells[i]));
+      const alignedCells = unionDays.map(d => cellByDay.get(d) || { type: 'na' });
+      matrix.push({ ...row, cells: alignedCells, serial: serial++ });
+    });
+  });
+
+  return { days: unionDays, matrix, perClass };
 }
 
 function classReportCellHtml(cell){
   if(cell.type === 'full') return '<td class="cr-cell cr-full" title="غياب يوم كامل">✕</td>';
   if(cell.type === 'partial') return `<td class="cr-cell cr-partial" title="غياب جزئي (${cell.count} حصة)">${fmt(cell.count)}</td>`;
+  if(cell.type === 'na') return '<td class="cr-cell cr-na" title="لا يوجد دوام لهذه الشعبة هذا اليوم">—</td>';
   return '<td class="cr-cell cr-present"></td>';
 }
 
-function renderClassReportPreview(className, range, data){
+let classReportSort = { key: null, dir: 1 };
+
+function sortClassReportMatrix(matrix){
+  if(!classReportSort.key) return matrix;
+  const { key, dir } = classReportSort;
+  const sorted = matrix.slice().sort((a,b) => {
+    let av, bv;
+    if(key === 'serial'){ av = a.serial; bv = b.serial; }
+    else if(key === 'name'){ av = a.student.studentName; bv = b.student.studentName; }
+    else if(key === 'class'){ av = a.className; bv = b.className; }
+    else if(key === 'fullDay'){ av = a.fullDayTotal; bv = b.fullDayTotal; }
+    else if(key === 'partial'){ av = a.partialTotal; bv = b.partialTotal; }
+    if(typeof av === 'string') return av.localeCompare(bv, 'ar') * dir;
+    return (av - bv) * dir;
+  });
+  return sorted;
+}
+
+function renderClassReportPreview(classNameOrAll, range, data){
   const box = document.getElementById('classReportPreview');
   if(!data.days.length){
-    box.innerHTML = `<div class="note-box">${escapeHtml(className)} — ${escapeHtml(range.label)} — لا توجد أيام دوام مسجَّلة لهذه الشعبة ضمن هذا النطاق.</div>`;
+    box.innerHTML = `<div class="note-box">${escapeHtml(range.label)} — لا توجد أيام دوام مسجَّلة ضمن هذا النطاق.</div>`;
     return;
   }
+  const showClassCol = classNameOrAll === '__ALL__';
+  const sortedMatrix = sortClassReportMatrix(data.matrix);
+
+  const CLASS_W = 64, SERIAL_W = 34, NAME_W = 150;
+  const rightSerial = showClassCol ? CLASS_W : 0;
+  const rightName = rightSerial + SERIAL_W;
+
+  const sortArrow = (key) => classReportSort.key === key ? (classReportSort.dir === 1 ? ' ▲' : ' ▼') : '';
   const dayHeaders = data.days.map(d => `<th title="${escapeHtml(d)}">${escapeHtml(fmtDateShortAr(toDateFromKey(d)))}</th>`).join('');
-  const rows = data.matrix.map(row => `
+  const rows = sortedMatrix.map(row => `
     <tr>
-      <td class="cr-student-cell">${escapeHtml(row.student.studentName)} <span class="hint mono">(${escapeHtml(row.student.studentId)})</span></td>
+      ${showClassCol ? `<td class="cr-student-cell" style="position:sticky;right:0;width:${CLASS_W}px;">${escapeHtml(row.className)}</td>` : ''}
+      <td class="cr-student-cell" style="position:sticky;right:${rightSerial}px;width:${SERIAL_W}px;text-align:center;">${fmt(row.serial)}</td>
+      <td class="cr-student-cell" style="position:sticky;right:${rightName}px;min-width:${NAME_W}px;">${escapeHtml(row.student.studentName)} <span class="hint mono">(${escapeHtml(row.student.studentId)})</span></td>
+      <td class="mono cr-total-col">${fmt(row.fullDayTotal)}</td>
+      <td class="mono cr-total-col">${fmt(row.partialTotal)}</td>
       ${row.cells.map(classReportCellHtml).join('')}
     </tr>`).join('');
 
   box.innerHTML = `
-    <div class="note-box">${escapeHtml(className)} — ${escapeHtml(range.label)} — ${fmt(data.days.length)} يوم دوام × ${fmt(data.matrix.length)} طالب. <span class="cr-full" style="padding:1px 6px;">✕</span> غياب يوم كامل — <span class="cr-partial" style="padding:1px 6px;">٢</span> عدد حصص الغياب الجزئي — خلية فارغة = حاضر</div>
+    <div class="note-box">${escapeHtml(range.label)} — ${fmt(data.days.length)} يوم دوام × ${fmt(data.matrix.length)} طالب. <span class="cr-full" style="padding:1px 6px;">✕</span> غياب يوم كامل — <span class="cr-partial" style="padding:1px 6px;">٢</span> عدد حصص الغياب الجزئي — خلية فارغة = حاضر</div>
     <div class="table-scroll">
-      <table class="data-table cr-matrix-table">
-        <thead><tr><th class="cr-student-cell">الطالب</th>${dayHeaders}</tr></thead>
+      <table class="data-table cr-matrix-table" dir="rtl" style="direction:rtl;">
+        <thead><tr>
+          ${showClassCol ? `<th class="cr-student-cell cr-sortable" data-sort="class" style="position:sticky;right:0;width:${CLASS_W}px;">الصف${sortArrow('class')}</th>` : ''}
+          <th class="cr-student-cell cr-sortable" data-sort="serial" style="position:sticky;right:${rightSerial}px;width:${SERIAL_W}px;">#${sortArrow('serial')}</th>
+          <th class="cr-student-cell cr-sortable" data-sort="name" style="position:sticky;right:${rightName}px;min-width:${NAME_W}px;">الطالب${sortArrow('name')}</th>
+          <th class="cr-sortable cr-total-col" data-sort="fullDay">مجموع غياب الأيام${sortArrow('fullDay')}</th>
+          <th class="cr-sortable cr-total-col" data-sort="partial">مجموع غياب الحصص${sortArrow('partial')}</th>
+          ${dayHeaders}
+        </tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
   `;
+
+  box.querySelectorAll('.cr-sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if(classReportSort.key === key) classReportSort.dir *= -1;
+      else { classReportSort.key = key; classReportSort.dir = 1; }
+      renderClassReportPreview(classNameOrAll, range, data);
+    });
+  });
 }
 
 let lastClassReportContext = null;
 
 document.getElementById('btnGenerateClassReport').addEventListener('click', () => {
-  const className = document.getElementById('classReportSelect').value;
-  if(!className) return;
+  const classNameOrAll = document.getElementById('classReportSelect').value;
+  if(!classNameOrAll) return;
+  classReportSort = { key: null, dir: 1 };
   const range = getClassReportDateRange();
-  const data = generateClassReportData(className, range.dateFrom, range.dateTo);
-  renderClassReportPreview(className, range, data);
-  lastClassReportContext = { className, range, data };
+  const data = generateClassReportData(classNameOrAll, range.dateFrom, range.dateTo);
+  renderClassReportPreview(classNameOrAll, range, data);
+  lastClassReportContext = { classNameOrAll, range, data };
   document.getElementById('classReportExportActions').style.display = 'flex';
-  // جدول بعمود لكل يوم لا يصلح للطباعة إن كانت الأيام كثيرة (عرض الصفحة محدود) - نكتفي بتصدير Excel حينها
-  const pdfBtn = document.getElementById('btnClassReportPDF');
-  const tooWideForPDF = data.days.length > 10;
-  pdfBtn.style.display = tooWideForPDF ? 'none' : 'inline-flex';
-  document.getElementById('classReportPdfNote').style.display = tooWideForPDF ? 'inline' : 'none';
 });
 
 function buildClassReportPrintHTML(ctx){
-  const { className, range, data } = ctx;
+  const { range, data } = ctx;
   const logos = Array.from(document.querySelectorAll('header.topbar .brand-logo')).map(img => img.src);
   const moeLogo = logos[0] || '', schoolLogo = logos[1] || '';
-  const dayHeaders = data.days.map(d => `<th>${escapeHtml(fmtDateShortAr(toDateFromKey(d)))}</th>`).join('');
-  const rows = data.matrix.map(row => `
-    <tr>
-      <td style="text-align:start;font-weight:700;">${escapeHtml(row.student.studentName)} (${escapeHtml(row.student.studentId)})</td>
-      ${row.cells.map(c => c.type === 'full' ? '<td style="background:var(--berry-soft);color:var(--berry);font-weight:800;">✕</td>' : c.type === 'partial' ? `<td style="background:#FBF3D9;color:#8A6A1E;font-weight:800;">${fmt(c.count)}</td>` : '<td></td>').join('')}
-    </tr>`).join('');
 
-  return `
-    <div class="print-report-head">
-      ${moeLogo ? `<img src="${moeLogo}">` : ''}
-      <div class="prh-text">
-        <h1>تقرير غياب الصف</h1>
-        <h2>${escapeHtml(SCHOOL_NAME)}</h2>
-        <p>${escapeHtml(className)} — ${escapeHtml(range.label)} — ${fmt(data.days.length)} يوم × ${fmt(data.matrix.length)} طالب. ✕ = غياب يوم كامل، رقم = عدد حصص الغياب الجزئي</p>
-      </div>
-      ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
-    </div>
-    <table class="print-report-table entry-print-table">
-      <thead><tr><th style="text-align:start;">الطالب</th>${dayHeaders}</tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div class="print-report-footer">
-      <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
-      <span>توقيع المسؤول: ______________________</span>
-    </div>
-  `;
+  return data.perClass.map((pc, idx) => {
+    const dayHeaders = pc.days.map(d => `<th>${escapeHtml(fmtDateShortAr(toDateFromKey(d)))}</th>`).join('');
+    const rows = pc.matrix.map((row, i) => `
+      <tr>
+        <td>${fmt(i+1)}</td>
+        <td style="text-align:start;font-weight:700;">${escapeHtml(row.student.studentName)} (${escapeHtml(row.student.studentId)})</td>
+        <td>${fmt(row.fullDayTotal)}</td>
+        <td>${fmt(row.partialTotal)}</td>
+        ${row.cells.map(c => c.type === 'full' ? '<td style="background:#F5D9D9;color:#7A2E3D;font-weight:800;">✕</td>' : c.type === 'partial' ? `<td style="background:#FBF3D9;color:#8A6A1E;font-weight:800;">${fmt(c.count)}</td>` : '<td></td>').join('')}
+      </tr>`).join('');
+
+    // عرض كل عمود متناسب مع محتواه: # ضيق جداً، اسم الطالب أوسع عمود (نص)، عمودا المجموع ضيقان (رقم فقط)، وأعمدة الأيام تتقاسم الباقي بالتساوي
+    const fixedPct = 3 + 24 + 7 + 7;
+    const dayPct = pc.days.length ? ((100 - fixedPct) / pc.days.length) : 0;
+    const colgroup = `<colgroup>
+      <col style="width:3%"><col style="width:24%"><col style="width:7%"><col style="width:7%">
+      ${pc.days.map(() => `<col style="width:${dayPct.toFixed(2)}%">`).join('')}
+    </colgroup>`;
+
+    return `
+      <div class="cr-print-page" ${idx < data.perClass.length - 1 ? 'style="page-break-after:always;"' : ''}>
+        <div class="print-report-head">
+          ${moeLogo ? `<img src="${moeLogo}">` : ''}
+          <div class="prh-text">
+            <h1>سجل غياب الصف</h1>
+            <h2>${escapeHtml(SCHOOL_NAME)} — شعبة ${escapeHtml(pc.className)}</h2>
+            <p>${escapeHtml(range.label)} — ${fmt(pc.days.length)} يوم × ${fmt(pc.matrix.length)} طالب. ✕ = غياب يوم كامل، رقم = عدد حصص الغياب الجزئي</p>
+          </div>
+          ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
+        </div>
+        <table class="print-report-table entry-print-table cr-print-table" style="table-layout:fixed;">
+          ${colgroup}
+          <thead><tr><th>#</th><th style="text-align:start;">الطالب</th><th>مج.أيام</th><th>مج.حصص</th>${dayHeaders}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="print-report-footer">
+          <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
+          <span>توقيع المسؤول: ______________________</span>
+        </div>
+      </div>`;
+  }).join('');
 }
 document.getElementById('btnClassReportPDF').addEventListener('click', () => {
   if(!lastClassReportContext) return;
@@ -3615,25 +3823,246 @@ window.addEventListener('afterprint', () => {
 });
 
 /* تصدير Excel: ملف جديد مستقل تماماً (لا علاقة له بملف الحضور المرتبط) - آمن تماماً ولا يمسّ أي جدول Excel قائم */
+/* تصدير Excel: ملف جديد مستقل تماماً (لا علاقة له بملف الحضور المرتبط) - آمن تماماً ولا يمسّ أي جدول Excel قائم.
+   شيت منفصل لكل شعبة (نفس منطق PDF: صفحة/شيت لكل شعبة، بأيامها الفعلية فقط دون أعمدة "لا دوام" مقحمة) */
 function exportClassReportExcel(ctx){
-  const { className, range, data } = ctx;
+  const { range, data } = ctx;
   const wb = XLSX.utils.book_new();
 
-  const header = ['الطالب', 'الرقم', ...data.days.map(d => fmtDateShortAr(toDateFromKey(d)))];
-  const aoa = [header];
-  data.matrix.forEach(row => {
-    const cells = row.cells.map(c => c.type === 'full' ? 'غياب كامل' : c.type === 'partial' ? c.count : '');
-    aoa.push([row.student.studentName, row.student.studentId || '', ...cells]);
-  });
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  XLSX.utils.book_append_sheet(wb, ws, 'تقرير الغياب');
+  // شيت إضافي "كل المدرسة" يجمع كل الشعب معاً بجدول واحد موحَّد (فقط عند اختيار "كل الصفوف")
+  if(data.perClass.length > 1){
+    const header = ['#', 'الطالب', 'الرقم', 'الصف', 'مجموع غياب الأيام', 'مجموع غياب الحصص', ...data.days];
+    const aoa = [header];
+    data.matrix.forEach(row => {
+      const cells = row.cells.map(c => c.type === 'full' ? 'غ' : c.type === 'partial' ? c.count : '');
+      aoa.push([row.serial, row.student.studentName, row.student.studentId || '', row.className, row.fullDayTotal, row.partialTotal, ...cells]);
+    });
+    const wsAll = XLSX.utils.aoa_to_sheet(aoa);
+    wsAll['!cols'] = [
+      { wch: 4 }, { wch: 26 }, { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 12 },
+      ...data.days.map(() => ({ wch: 11 }))
+    ];
+    const allRange = XLSX.utils.decode_range(wsAll['!ref']);
+    for(let c = allRange.s.c; c <= allRange.e.c; c++){
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c });
+      if(wsAll[cellRef]) wsAll[cellRef].s = { font: { bold: true }, fill: { fgColor: { rgb: 'EFEFEF' } } };
+    }
+    XLSX.utils.book_append_sheet(wb, wsAll, 'كل المدرسة');
+  }
 
-  const safeClassName = className.replace(/\//g, '-');
-  XLSX.writeFile(wb, `تقرير_${safeClassName}.xlsx`);
+  data.perClass.forEach(pc => {
+    const header = ['#', 'الطالب', 'الرقم', 'الصف', 'مجموع غياب الأيام', 'مجموع غياب الحصص', ...pc.days];
+    const aoa = [header];
+    pc.matrix.forEach((row, i) => {
+      const cells = row.cells.map(c => c.type === 'full' ? 'غ' : c.type === 'partial' ? c.count : '');
+      aoa.push([i+1, row.student.studentName, row.student.studentId || '', pc.className, row.fullDayTotal, row.partialTotal, ...cells]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+    // تنسيق بسيط وعملي: عرض أعمدة مناسب + رأس بارز
+    ws['!cols'] = [
+      { wch: 4 }, { wch: 26 }, { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 12 },
+      ...pc.days.map(() => ({ wch: 11 }))
+    ];
+    const headerRowRange = XLSX.utils.decode_range(ws['!ref']);
+    for(let c = headerRowRange.s.c; c <= headerRowRange.e.c; c++){
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c });
+      if(ws[cellRef]) ws[cellRef].s = { font: { bold: true }, fill: { fgColor: { rgb: 'EFEFEF' } } };
+    }
+
+    const safeSheetName = pc.className.replace(/[\/\\?*\[\]:]/g, '-').slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+  });
+
+  const fileLabel = ctx.classNameOrAll === '__ALL__' ? 'كل_الصفوف' : ctx.classNameOrAll.replace(/\//g, '-');
+  XLSX.writeFile(wb, `سجل_الغياب_${fileLabel}.xlsx`);
 }
 document.getElementById('btnClassReportExcel').addEventListener('click', () => {
-  if(!lastClassReportContext) return;
-  exportClassReportExcel(lastClassReportContext);
+  if(!lastClassReportContext){ alert('اضغط "عرض التقرير" أولاً قبل التصدير.'); return; }
+  try{
+    exportClassReportExcel(lastClassReportContext);
+  }catch(err){
+    console.error(err);
+    alert('تعذّر تصدير ملف الإكسل: ' + err.message);
+  }
+});
+
+/* ===================== تحديث ومقارنة قوائم الصفوف (أداة مقارنة فقط - لا تُعدِّل الملف المرتبط) ===================== */
+function parseClassBulkList(text){
+  return (text || '').split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    const m = line.match(/^(.*)\s*\(([^)]+)\)\s*$/);
+    if(m) return { name: m[1].trim(), id: normalizeDigits(m[2].trim()) };
+    return { name: line, id: '' };
+  }).filter(e => e.name && e.id);
+}
+
+function classNameToCode(className){
+  const ordIdx = ORDINALS.indexOf(gradeFromClassName(className));
+  const section = sectionFromClassName(className);
+  if(ordIdx < 0) return className;
+  return String(ordIdx + 1) + String(section);
+}
+
+function openRosterCompareModal(){
+  const container = document.getElementById('rosterCompareTextareas');
+  const classes = APP.classesRegistry.slice().sort(sortClasses);
+  const grades = Array.from(new Set(classes.map(c => c.grade))).sort((a,b) => gradeOrderIndex(a) - gradeOrderIndex(b));
+
+  container.innerHTML = grades.map(g => {
+    const classesOfGrade = classes.filter(c => c.grade === g);
+    return `
+      <div style="margin-bottom:16px;">
+        <div class="week-segment-heading" style="border-bottom:none;margin-bottom:6px;color:${gradeAccent(g)};">${escapeHtml(g)}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;">
+          ${classesOfGrade.map(c => {
+            const students = Array.from(APP.roster.values())
+              .filter(s => s.className === c.className)
+              .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
+            const text = students.map(s => `${s.studentName} (${s.studentId})`).join('\n');
+            return `
+              <div>
+                <label style="font-weight:700;font-size:12px;display:block;margin-bottom:4px;">${escapeHtml(c.className)} <span class="hint">(${fmt(students.length)})</span></label>
+                <textarea class="roster-compare-textarea" data-class="${escapeHtml(c.className)}" style="width:100%;height:160px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px;border:1px solid var(--line);">${escapeHtml(text)}</textarea>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('rosterCompareResults').innerHTML = '';
+  document.getElementById('rosterCompareModal').style.display = 'flex';
+}
+
+document.getElementById('btnCloseRosterCompareModal').addEventListener('click', () => document.getElementById('rosterCompareModal').style.display = 'none');
+document.getElementById('rosterCompareModal').addEventListener('click', e => { if(e.target.id === 'rosterCompareModal') e.currentTarget.style.display = 'none'; });
+
+document.getElementById('btnCompareRosterLists').addEventListener('click', () => {
+  const newListsByClass = {};
+  document.querySelectorAll('.roster-compare-textarea').forEach(ta => {
+    newListsByClass[ta.dataset.class] = parseClassBulkList(ta.value);
+  });
+
+  const oldByStudentId = new Map();
+  APP.roster.forEach((s, id) => { oldByStudentId.set(id, { name: s.studentName, className: s.className }); });
+
+  const newByStudentId = new Map();
+  Object.keys(newListsByClass).forEach(cn => {
+    newListsByClass[cn].forEach(e => newByStudentId.set(e.id, { name: e.name, className: cn }));
+  });
+
+  const moved = [], added = [], removed = [];
+  newByStudentId.forEach((info, id) => {
+    const old = oldByStudentId.get(id);
+    if(!old){ added.push({ id, name: info.name, className: info.className }); return; }
+    if(old.className !== info.className) moved.push({ id, name: info.name, fromClass: old.className, toClass: info.className });
+  });
+  oldByStudentId.forEach((info, id) => {
+    if(!newByStudentId.has(id)) removed.push({ id, name: info.name, className: info.className });
+  });
+
+  const resultsBox = document.getElementById('rosterCompareResults');
+  if(!moved.length && !added.length && !removed.length){
+    resultsBox.innerHTML = '<div class="note-box">لا توجد تغييرات — القوائم مطابقة للحالية.</div>';
+    return;
+  }
+
+  const grades = Array.from(new Set(APP.classesRegistry.map(c => c.grade))).sort((a,b) => gradeOrderIndex(a) - gradeOrderIndex(b));
+  let html = `<div class="note-box">إجمالي التغييرات: ${fmt(moved.length)} انتقال، ${fmt(added.length)} إضافة، ${fmt(removed.length)} حذف.</div>`;
+  grades.forEach(g => {
+    const gMoved = moved.filter(x => gradeFromClassName(x.fromClass) === g || gradeFromClassName(x.toClass) === g);
+    const gAdded = added.filter(x => gradeFromClassName(x.className) === g);
+    const gRemoved = removed.filter(x => gradeFromClassName(x.className) === g);
+    if(!gMoved.length && !gAdded.length && !gRemoved.length) return;
+    html += `<div class="school-data-section"><h4 style="color:${gradeAccent(g)};">${escapeHtml(g)}</h4>`;
+    if(gMoved.length) html += `<div style="margin-bottom:8px;"><b>🔀 طلاب انتقلوا (${fmt(gMoved.length)}):</b><ul class="dcb-name-list">${gMoved.map(x => `<li>${escapeHtml(x.name)} <span class="dcb-id">(${escapeHtml(x.id)})</span>: ${escapeHtml(x.fromClass)} ← ${escapeHtml(x.toClass)}</li>`).join('')}</ul></div>`;
+    if(gAdded.length) html += `<div style="margin-bottom:8px;"><b>➕ طلاب جدد (${fmt(gAdded.length)}):</b><ul class="dcb-name-list">${gAdded.map(x => `<li>${escapeHtml(x.name)} <span class="dcb-id">(${escapeHtml(x.id)})</span> — ${escapeHtml(x.className)}</li>`).join('')}</ul></div>`;
+    if(gRemoved.length) html += `<div style="margin-bottom:8px;"><b>➖ طلاب محذوفون (${fmt(gRemoved.length)}):</b><ul class="dcb-name-list">${gRemoved.map(x => `<li>${escapeHtml(x.name)} <span class="dcb-id">(${escapeHtml(x.id)})</span> — كان في ${escapeHtml(x.className)}</li>`).join('')}</ul></div>`;
+    html += `</div>`;
+  });
+  resultsBox.innerHTML = html;
+});
+
+/* تصدير القوائم المحدَّثة (كما هي في المربعات الآن) بنفس تنسيق شيت "جميع الطلاب" - ملف جديد مستقل تماماً، آمن ولا يمسّ أي ملف قائم */
+document.getElementById('btnExportUpdatedRosterExcel').addEventListener('click', () => {
+  const phoneById = new Map();
+  APP.roster.forEach((s, id) => { if(s.phone) phoneById.set(id, s.phone); });
+
+  const aoa = [['الصف', 'م', 'اسم الطالب', 'رقم التواصل']];
+  document.querySelectorAll('.roster-compare-textarea').forEach(ta => {
+    const cn = ta.dataset.class;
+    const code = classNameToCode(cn);
+    const entries = parseClassBulkList(ta.value);
+    entries.forEach((e, i) => {
+      aoa.push([code, i + 1, `${e.name} (${e.id})`, phoneById.get(e.id) || '']);
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 8 }, { wch: 6 }, { wch: 34 }, { wch: 16 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'جميع الطلاب');
+  XLSX.writeFile(wb, 'قوائم_الطلاب_المحدَّثة.xlsx');
+});
+
+/* ===================== كشوف غياب ورقية فارغة (نسخة احتياطية للتحويل اليدوي عند الحاجة) ===================== */
+function printPaperAttendanceSheets(){
+  if(!APP.loaded){ alert('ارفع ملف الحضور أولاً.'); return; }
+  const logos = Array.from(document.querySelectorAll('header.topbar .brand-logo')).map(img => img.src);
+  const moeLogo = logos[0] || '', schoolLogo = logos[1] || '';
+  const classes = APP.classesRegistry.slice().sort(sortClasses);
+  const PERIODS = 8;
+
+  const colgroup = `<colgroup>
+    <col style="width:7%"><col style="width:31%">
+    ${Array.from({ length: PERIODS }, () => '<col style="width:7.75%">').join('')}
+  </colgroup>`;
+
+  const pages = classes.map((c, idx) => {
+    const students = Array.from(APP.roster.values())
+      .filter(s => s.className === c.className)
+      .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
+
+    const periodHeaders = Array.from({ length: PERIODS }, (_, i) => `<th>حصة ${i+1}</th>`).join('');
+    const rows = students.map((s, i) => `
+      <tr>
+        <td>${fmt(i+1)}</td>
+        <td style="text-align:start;font-weight:700;">${escapeHtml(s.studentName)}</td>
+        ${Array.from({ length: PERIODS }, () => '<td>&nbsp;</td>').join('')}
+      </tr>`).join('');
+    const signatureRow = `
+      <tr class="paper-sheet-signature-row">
+        <td colspan="2" style="text-align:start;font-weight:700;">اسم وتوقيع المعلم</td>
+        ${Array.from({ length: PERIODS }, () => '<td>&nbsp;</td>').join('')}
+      </tr>`;
+
+    return `
+      <div class="cr-print-page" ${idx < classes.length - 1 ? 'style="page-break-after:always;"' : ''}>
+        <div class="print-report-head">
+          ${moeLogo ? `<img src="${moeLogo}">` : ''}
+          <div class="prh-text">
+            <h1>كشف غياب ورقي — ${escapeHtml(c.className)}</h1>
+            <h2>${escapeHtml(SCHOOL_NAME)}</h2>
+            <p>التاريخ: __________________ &nbsp;&nbsp;&nbsp; اليوم: الاثنين ▢ الثلاثاء ▢ الأربعاء ▢ الخميس ▢ الجمعة ▢</p>
+          </div>
+          ${schoolLogo ? `<img src="${schoolLogo}">` : ''}
+        </div>
+        <table class="print-report-table paper-sheet-table" style="table-layout:fixed;">
+          ${colgroup}
+          <thead><tr><th>#</th><th style="text-align:start;">اسم الطالب</th>${periodHeaders}</tr></thead>
+          <tbody>${rows}${signatureRow}</tbody>
+        </table>
+        <div class="print-report-footer">
+          <span>توقيع المسؤول: ______________________</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('paperSheetsPrintArea').innerHTML = pages;
+  document.body.classList.add('printing-paper-sheets');
+  window.print();
+}
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-paper-sheets');
 });
 
 /* ===================== بدء التشغيل ===================== */
