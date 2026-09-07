@@ -2718,6 +2718,7 @@ function openStudentModal(key){
       <td><input type="checkbox" class="sm-day-check" value="${escapeHtml(d.date)}"></td>
       <td>${escapeHtml(weekdayName(toDateFromKey(d.date)))}</td>
       <td>${escapeHtml(d.date)}</td>
+      <td>${escapeHtml(d.class)}</td>
       <td>${d.periodsAbsent.length}</td>
       <td><button class="btn tiny whatsapp" data-single-day-wa="${escapeHtml(d.date)}" title="استفسار عن غياب هذا اليوم">📩</button></td>
     </tr>`).join('');
@@ -2734,7 +2735,7 @@ function openStudentModal(key){
     ${comm}
     <h4 style="font-family:'Cairo',sans-serif;font-size:12.5px;color:var(--plum);margin:14px 0 6px;">أيام الغياب الكامل</h4>
     <div class="table-scroll" style="max-height:170px;">
-      <table class="data-table"><thead><tr><th></th><th>اليوم</th><th>التاريخ</th><th>عدد الحصص الغائب بها</th><th></th></tr></thead><tbody>${dailyRows || '<tr><td colspan="5">لا يوجد</td></tr>'}</tbody></table>
+      <table class="data-table"><thead><tr><th></th><th>اليوم</th><th>التاريخ</th><th>الصف وقتها</th><th>عدد الحصص الغائب بها</th><th></th></tr></thead><tbody>${dailyRows || '<tr><td colspan="6">لا يوجد</td></tr>'}</tbody></table>
     </div>
     <h4 style="font-family:'Cairo',sans-serif;font-size:12.5px;color:var(--plum);margin:14px 0 6px;">كل سجلات الغياب على مستوى الحصة</h4>
     <div class="table-scroll" style="max-height:200px;">
@@ -2773,8 +2774,8 @@ function buildStudentReportPrintHTML(key){
   const logos = Array.from(document.querySelectorAll('header.topbar .brand-logo')).map(img => img.src);
   const moeLogo = logos[0] || '', schoolLogo = logos[1] || '';
 
-  const dailyRows = dailyHist.map(d => `<tr><td>${escapeHtml(weekdayName(toDateFromKey(d.date)))}</td><td>${escapeHtml(d.date)}</td><td>${d.periodsAbsent.length}</td></tr>`).join('');
-  const periodRows = periodHist.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${weekdayName(r.date)}</td><td>${escapeHtml(r.period)}</td><td>${escapeHtml(r.teacherName)}</td></tr>`).join('');
+  const dailyRows = dailyHist.map(d => `<tr><td>${escapeHtml(weekdayName(toDateFromKey(d.date)))}</td><td>${escapeHtml(d.date)}</td><td>${escapeHtml(d.class)}</td><td>${d.periodsAbsent.length}</td></tr>`).join('');
+  const periodRows = periodHist.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${weekdayName(r.date)}</td><td>${escapeHtml(r.period)}</td><td>${escapeHtml(r.recordedClass)}</td><td>${escapeHtml(r.teacherName)}</td></tr>`).join('');
 
   return `
     <table class="print-page-wrap"><thead><tr><td>
@@ -2793,9 +2794,9 @@ function buildStudentReportPrintHTML(key){
       <div class="pss-kpi"><div class="n" style="color:#C9A227;">${fmt(periodOnlyCount)}</div><div class="l">حصص الغياب (في أيام حضور)</div></div>
     </div>
     <h3 style="font-family:'Cairo',sans-serif;font-size:13.5px;color:var(--plum);margin:16px 0 8px;">أيام الغياب الكامل</h3>
-    <table class="print-report-table"><thead><tr><th>اليوم</th><th>التاريخ</th><th>عدد الحصص</th></tr></thead><tbody>${dailyRows || '<tr><td colspan="3">لا يوجد</td></tr>'}</tbody></table>
+    <table class="print-report-table"><thead><tr><th>اليوم</th><th>التاريخ</th><th>الصف وقتها</th><th>عدد الحصص</th></tr></thead><tbody>${dailyRows || '<tr><td colspan="4">لا يوجد</td></tr>'}</tbody></table>
     <h3 style="font-family:'Cairo',sans-serif;font-size:13.5px;color:var(--plum);margin:16px 0 8px;">كل سجلات الغياب على مستوى الحصة</h3>
-    <table class="print-report-table"><thead><tr><th>التاريخ</th><th>اليوم</th><th>الحصة</th><th>المعلم</th></tr></thead><tbody>${periodRows || '<tr><td colspan="4">لا يوجد</td></tr>'}</tbody></table>
+    <table class="print-report-table"><thead><tr><th>التاريخ</th><th>اليوم</th><th>الحصة</th><th>الصف وقتها</th><th>المعلم</th></tr></thead><tbody>${periodRows || '<tr><td colspan="5">لا يوجد</td></tr>'}</tbody></table>
     <div class="print-report-footer">
       <span>تاريخ إصدار التقرير: ${escapeHtml(fmtDateTime(new Date()))}</span>
       <span>توقيع المسؤول: ______________________</span>
