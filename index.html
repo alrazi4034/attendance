@@ -2563,7 +2563,7 @@ function openEntryCellModal(date, className, period){
     const entryTime = fmtTime24(records[0].date); // وقت إكمال الاستبانة الفعلي بتوقيت الإمارات (بعد التصحيح من غرينتش)
     // نحدّد من هؤلاء غاب اليوم كاملاً (وليس هذه الحصة فقط) لتمييزه بخط عريض
     const fullDaySet = new Set();
-    APP.dailyAbsences.forEach(d => { if(d.date === date && d.currentClass === className) fullDaySet.add(d.studentKey); });
+    APP.dailyAbsences.forEach(d => { if(d.date === date && d.class === className) fullDaySet.add(d.studentKey); });
     body.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--ink-soft);">المعلم: ${escapeHtml(records[0].teacherName || '—')} — وقت إدخال الغياب: ${escapeHtml(entryTime)} (بتوقيت الإمارات)</div>
       <div class="note-box" style="margin-bottom:8px;font-size:11px;"><b>الاسم بخط عريض</b> = غائب اليوم كاملاً — الاسم العادي = غائب عن هذه الحصة فقط</div>
       <ul class="dcb-name-list">${records.map(r => {
@@ -3111,7 +3111,7 @@ function computeClassDayAbsentees(date, className){
   // نعتمد على APP.dailyAbsences المحسوبة مسبقاً وبشكل صحيح (الطالب الغائب في كل الحصص المسجَّلة فقط)
   // بدلاً من اتحاد كل سجلات الغياب الجزئي (الذي كان يُدرج أي طالب غاب في أي حصة، حتى لو حضر البقية)
   return APP.dailyAbsences
-    .filter(d => d.date === date && d.currentClass === className)
+    .filter(d => d.date === date && d.class === className)
     .map(d => ({ name: d.studentName, id: d.studentId || '' }));
 }
 
@@ -3620,11 +3620,11 @@ function generateSingleClassReportData(className, dateFrom, dateTo){
     .sort((a,b) => (parseInt(a.order,10)||0) - (parseInt(b.order,10)||0));
 
   const fullDaySet = new Set();
-  APP.dailyAbsences.forEach(d => { if(d.currentClass === className) fullDaySet.add(d.date + SEP + (d.studentId || ('name:'+d.studentName))); });
+  APP.dailyAbsences.forEach(d => { if(d.class === className) fullDaySet.add(d.date + SEP + (d.studentId || ('name:'+d.studentName))); });
 
   const partialCountMap = new Map();
   APP.records.forEach(r => {
-    if(r.currentClass !== className || !r.date) return;
+    if(r.recordedClass !== className || !r.date) return;
     const dk = fmtDate(r.date);
     if(dateFrom && dk < dateFrom) return;
     if(dateTo && dk > dateTo) return;
