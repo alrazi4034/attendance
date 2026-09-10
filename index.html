@@ -1462,8 +1462,10 @@ function buildDailyAbsences(allSubmissions, periodRecords){
     const dk = parts[0], cls = parts[1], skey = parts[2];
     const recordedPeriods = subGroups.get(dk + SEP + cls) || new Set();
     if(recordedPeriods.size === 0) return;
-    let isFullDay = true;
-    recordedPeriods.forEach(p => { if(!absPeriods.has(p)) isFullDay = false; });
+    // غياب يوم كامل = غياب في 80% فأكثر من الحصص المسجَّلة لتلك الشعبة ذلك اليوم (وليس 100% بالضرورة)
+    // هذا يتحمّل خطأ تسجيل عرضي في حصة واحدة من ضمن عدة حصص، مع بقاء الحد آمنًا في الأيام قليلة الحصص
+    // (مثال: يومان مسجّلان فقط - يتطلب الغياب في كليهما، إذ إن 1/2=50% لا يبلغ العتبة)
+    const isFullDay = (absPeriods.size / recordedPeriods.size) >= 0.8;
     if(isFullDay){
       const meta = studentMeta.get(skey) || {};
       daily.push({
